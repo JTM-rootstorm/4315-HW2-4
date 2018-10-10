@@ -1,0 +1,84 @@
+/* modified from https://github.com/bingmann/flex-bison-cpp-example/blob/master/src/scanner.ll */
+
+%{
+    /* C++ string header, for string ops below */
+    #include <string>
+    #include <boost/multiprecision/gmp.hpp>
+
+    /* Implementation of yyFlexScanner */
+    #include "../scanner.hpp"
+    #undef YY_DECL
+    #define YY_DECL int Py::Scanner::yylex(Py::Parser::semantic_type * const lval, Py::Parser::location_type *location)
+
+    typedef Py::Parser::token token;
+    typedef Py::Parser::token_type token_type;
+
+    #define yyterminate() return token::END
+
+    #define YY_NO_UNISTD_H
+
+    #define YY_USER_ACTION yylloc->columns(yyleng);
+%}
+
+%option c++
+%option yyclass="Py::Scanner"
+%option batch
+%option debug
+%option noyywrap nounput
+%option stack
+
+%x comment
+
+%%
+%{
+    yylval = lval;
+    yylloc->step();
+%}
+
+"# "[^\n]*  /* consume comments */
+
+[0-9]+ {
+    yylval->build<boost::multiprecision::mpz_int>(boost::multiprecision::mpz_int(yytext));
+    return token::INTEGER;
+}
+
+"true"|"false" {
+    return token::BOOLEAN;
+}
+
+[ \t\r]+ {
+    yylloc->step();
+}
+
+"print" {
+    return token::PYFUNCTION;
+}
+
+"if"|"for" {
+    return token::KEYWORD;
+}
+
+("("(([^\n])+(","[^\n])*)*")")|"()" {
+    return token::FUNCSIG;
+}
+
+[A-Za-z][A-Za-z0-9_]* {
+    yylval->build<std::string>(yytext);
+    return token::VARIABLE;
+}
+
+"\""[^\n]"\"" {
+    return token::STRING;
+}
+
+\n {
+    yylloc->lines(yyleng);
+    yylloc->step();
+    return token::EOL;
+}
+
+. { // have bison eat the rest
+    return static_cast<token_type>(*yytext);
+}
+
+%%
