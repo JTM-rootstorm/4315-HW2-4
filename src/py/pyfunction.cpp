@@ -2,6 +2,7 @@
 #include "pyfunction.hpp"
 
 #include <regex>
+#include <iostream>
 
 /* Regex stuff from https://stackoverflow.com/a/41187191
  * finally can stop beating my head against the wall with that */
@@ -9,7 +10,7 @@
 void PyFunction::parseFunctionHeader() {
     std::vector<std::string> args;
 
-    std::regex reggie(R"(("[\w ,\-]+")|([\w\-]+))");
+    std::regex reggie(R"(("[\w ,\.\-]+")|([A-Za-z_]+[A-Za-z0-9_\-]*)|([\d]+(\.[\d]+)?))");
 
     std::smatch results;
 

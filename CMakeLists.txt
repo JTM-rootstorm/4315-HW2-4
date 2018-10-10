@@ -33,7 +33,7 @@ if(BISON_FOUND)
                     --defines=${CMAKE_SOURCE_DIR}/src/rcdgen/parser.tab.hh
                     --warnings=all
                     --feature=all
-                    ${CMAKE_SOURCE_DIR}/src/rcdgen/parser.yxx
+                    ${CMAKE_SOURCE_DIR}/src/grammar/parser.yxx
             COMMENT "Generating parser.cpp"
     )
 endif(BISON_FOUND)
@@ -45,7 +45,7 @@ if(FLEX_FOUND)
             OUTPUT ${FlexOutput}
             COMMAND ${FLEX_EXECUTABLE}
                     --outfile=${CMAKE_SOURCE_DIR}/src/rcdgen/lexer.yy.cc
-                    ${CMAKE_SOURCE_DIR}/src/rcdgen/lexer.lxx
+                    ${CMAKE_SOURCE_DIR}/src/grammar/lexer.lxx
             COMMENT "Generating lexer.cpp"
     )
 endif(FLEX_FOUND)
