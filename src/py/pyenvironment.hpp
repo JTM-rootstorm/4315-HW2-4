@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <unordered_map>
 
@@ -36,7 +37,10 @@ protected:
     ~PyEnvironment() = default;
 
 private:
+    typedef std::pair<PyConstants::VarTypes, boost::any> PyFuncReturn;
+
     std::unordered_map<std::string, std::unique_ptr<PyObject>> globalVars;
+    std::unordered_map<std::string, std::unique_ptr<PyFunction>> pyFunctions;
 
     bool varNameUsed(std::string varName);
 

@@ -35,8 +35,8 @@ protected:
 
 private:
     std::unordered_map<int, std::string> logMessages = {
-            {ERR_TYPE::NameError, "NameError: name \'%s\' is not defined\n"},
-            {ERR_TYPE::TypeError, "TypeError: variable '%s' of type \'%s\' cannot be used\n"}
+            {ERR_TYPE::NameError, "NameError: name '%s' is not defined\n"},
+            {ERR_TYPE::TypeError, "TypeError: variable '%s' of type '%s' cannot be used\n"}
     };
 
     /** define some pretty colors **/

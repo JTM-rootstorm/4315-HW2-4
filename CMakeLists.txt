@@ -15,7 +15,9 @@ endmacro(use_cxx11)
 use_cxx11()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
-find_package(Boost REQUIRED)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
+
+find_package(Boost COMPONENTS regex REQUIRED)
 
 find_package(BISON REQUIRED)
 set(BisonOutput
@@ -33,6 +35,7 @@ if(BISON_FOUND)
                     --defines=${CMAKE_SOURCE_DIR}/src/rcdgen/parser.tab.hh
                     --warnings=all
                     --feature=all
+                    --report=state
                     ${CMAKE_SOURCE_DIR}/src/grammar/parser.yxx
             COMMENT "Generating parser.cpp"
     )
@@ -63,7 +66,7 @@ set(SOURCES
         src/scanner.hpp
         src/driver.hpp              src/driver.cpp
         src/py/pyerrors.hpp
-        src/py/pyfunction.hpp       src/py/pyfunction.cpp)
+        src/py/pyfunction.hpp       src/py/pyfunction.cpp src/pyfunctionbuilder.hpp)
 
 add_executable(mypython ${SOURCES})
 target_include_directories(mypython PRIVATE ${Boost_INCLUDE_DIR})

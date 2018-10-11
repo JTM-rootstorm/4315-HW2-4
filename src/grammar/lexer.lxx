@@ -37,12 +37,18 @@
 
 "# "[^\n]*  /* consume comments */
 
+(\"[^\n]\") {
+    yylval->build<std::string>(yytext);
+    return token::STRING;
+}
+
 [0-9]+ {
     yylval->build<boost::multiprecision::mpz_int>(boost::multiprecision::mpz_int(yytext));
     return token::INTEGER;
 }
 
-"true"|"false" {
+[Tt]rue|[Ff]alse {
+    yylval->build<bool>(yytext);
     return token::BOOLEAN;
 }
 
@@ -50,25 +56,27 @@
     yylloc->step();
 }
 
-"print" {
+print {
     return token::PYFUNCTION;
 }
 
-"if"|"for" {
+if|for {
     return token::KEYWORD;
 }
 
-("("(([^\n])+(","[^\n])*)*")")|"()" {
+(def[ ]+[A-Za-z_]+[\w]+) {
+    yylval->build<std::string>(yytext);
+    return token::DEFFUNCTION;
+}
+
+(\((([^\n])+(,[^\n])*)*\)): {
+    yylval->build<std::string>(yytext);
     return token::FUNCSIG;
 }
 
-[A-Za-z][A-Za-z0-9_]* {
+([A-Za-z_]+[A-Za-z0-9_]*) {
     yylval->build<std::string>(yytext);
     return token::VARIABLE;
-}
-
-"\""[^\n]"\"" {
-    return token::STRING;
 }
 
 \n {

@@ -61,6 +61,7 @@
 %token <std::string>    STRING       "string"
 %token <std::string>    VARIABLE     "variable"
 %token <std::string>    PYFUNCTION   "built-in function"
+%token <std::string>    DEFFUNCTION  "user-defined function"
 %token <std::string>    FUNCSIG      "function signature"
 %token <std::string>    KEYWORD      "keyword"
 
@@ -73,10 +74,6 @@
 %type <class BaseExpressionNode*>     logicalcompare logicaleq logicaland logicalor
 
 %destructor { delete $$; } logicalcompare logicaleq logicaland logicalor
-
-%type <class PyFunction*>  pyfunction
-
-%destructor { delete $$; } pyfunction
 
 %%
 
@@ -102,7 +99,7 @@ variable : VARIABLE {
                     break;
             }
             case PyConstants::VarTypes::NONE: {
-                    PyEnvironment::Instance().pyConsole.logError(PyErrors::NameError, $1);
+                    PyEnvironment::Instance().pyConsole.logError(PyErrors::NameError, $1.c_str());
                     break;
             }
             default:
@@ -220,7 +217,7 @@ assignment : VARIABLE '=' expr {
 
              switch ( type ) {
                 case PyConstants::VarTypes::NUMBER: {
-                    val = boost::any($3->evaluate()->getData<double>());
+                    val = boost::any($3->evaluate()->getData<mpz_int>());
                     break;
                 }
                 case PyConstants::VarTypes::BOOL: {
@@ -243,7 +240,7 @@ assignment : VARIABLE '=' expr {
            }
 
 pyfunction : PYFUNCTION FUNCSIG {
-             $$ = new PyFunction($1, $2);
+             // nothing yet
           }
 
 start     : %empty
@@ -256,12 +253,8 @@ start     : %empty
           | start expr EOL {
             PyEnvironment::Instance().exprContext.expressions.push_back($2);
           }
-          | start pyfunction EOL {
-            $2->parseFunctionHeader();
-          }
-          | start pyfunction END {
-            $2->parseFunctionHeader();
-          }
+          | start pyfunction EOL
+          | start pyfunction END
 
 
 %%

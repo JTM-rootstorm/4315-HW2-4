@@ -151,13 +151,14 @@ public:
     }
 
     std::shared_ptr<PyObject> evaluate() const override {
-        auto leftVal = left->evaluate()->getData<mpz_int>();
+        /*auto leftVal = left->evaluate()->getData<mpz_int>();
         auto rightVal = right->evaluate()->getData<mpz_int>();
-        mpz_int total = boost::multiprecision::pow(leftVal.convert_to<cpp_dec_float_100>(),
-                rightVal.convert_to<cpp_dec_float_100>()).convert_to<mpz_int>();
+        cpp_dec_float_100 total = boost::multiprecision::pow(leftVal.convert_to<cpp_dec_float_100>(), rightVal.convert_to<cpp_dec_float_100>());
+        mpz_int goodVal = total.convert_to<mpz_int>();
 
-        std::shared_ptr<PyInt> pyInt = std::make_shared<PyInt>(total);
-        return std::dynamic_pointer_cast<PyObject>(pyInt);
+        std::shared_ptr<PyInt> pyInt = std::make_shared<PyInt>(goodVal);
+        return std::dynamic_pointer_cast<PyObject>(pyInt);*/
+        return std::make_shared<PyInt>(1);
     }
 private:
     BaseExpressionNode* left;

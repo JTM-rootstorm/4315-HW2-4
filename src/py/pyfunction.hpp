@@ -1,5 +1,3 @@
-#include <utility>
-
 #ifndef MYPYTHON_PYFUNCTION_HPP
 #define MYPYTHON_PYFUNCTION_HPP
 
