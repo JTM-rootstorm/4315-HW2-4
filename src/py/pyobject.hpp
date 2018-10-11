@@ -2,13 +2,10 @@
 #define MYPYTHON_PYOBJECT_HPP
 
 #include <boost/any.hpp>
-#include <boost/multiprecision/gmp.hpp>
 
 #include <utility>
 
 #include "pyconstants.hpp"
-
-typedef boost::multiprecision::mpz_int mpz_int;
 
 /* template and boost::any usage idea from https://stackoverflow.com/questions/7968023/c-virtual-template-method */
 
@@ -37,11 +34,11 @@ protected:
 
 class PyInt : public PyObject {
 public:
-    explicit PyInt (mpz_int _data) : PyObject(PyConstants::VarTypes::NUMBER), data(std::move(_data)) {}
+    explicit PyInt (int _data) : PyObject(PyConstants::VarTypes::NUMBER), data(std::move(_data)) {}
 
 protected:
     void setDataImpl(boost::any const &value) override {
-        data = boost::any_cast<mpz_int>(value);
+        data = boost::any_cast<int>(value);
     }
 
     boost::any getDataImpl() const override {
@@ -49,7 +46,7 @@ protected:
     }
 
 private:
-    mpz_int data;
+    int data;
 };
 
 class PyFloat : public PyObject {

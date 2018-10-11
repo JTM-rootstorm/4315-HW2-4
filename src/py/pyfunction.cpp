@@ -13,7 +13,7 @@ void PyFunction::parseFunctionHeader() {
     for (boost::sregex_iterator i = boost::sregex_iterator(funcSignature.begin(), funcSignature.end(), reggie);
             i != boost::sregex_iterator(); ++i) {
         boost::smatch m = *i;
-        std::cout << m.str() << std::endl;
+
         args.push_back(m.str());
     }
 

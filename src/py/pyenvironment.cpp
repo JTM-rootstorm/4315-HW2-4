@@ -49,7 +49,7 @@ void
 PyEnvironment::mutateGlobalVar(PyConstants::VarTypes vartype, const std::string &varName, boost::any value) {
     switch ( vartype ) {
         case PyConstants::VarTypes::NUMBER: {
-            std::unique_ptr<PyInt> pyInt = std::unique_ptr<PyInt>(new PyInt(boost::any_cast<mpz_int>(value)));
+            std::unique_ptr<PyInt> pyInt = std::unique_ptr<PyInt>(new PyInt(boost::any_cast<int>(value)));
             globalVars.at(varName) = std::move(pyInt);
             break;
         }
@@ -71,7 +71,7 @@ PyEnvironment::mutateGlobalVar(PyConstants::VarTypes vartype, const std::string 
 void PyEnvironment::modifyGlobalVar(PyConstants::VarTypes vartype, const std::string &varName, boost::any value) {
     switch ( vartype ) {
         case PyConstants::VarTypes::NUMBER: {
-            globalVars.at(varName)->setData<mpz_int>(boost::any_cast<mpz_int>(value));
+            globalVars.at(varName)->setData<int>(boost::any_cast<int>(value));
             break;
         }
         case PyConstants::VarTypes::BOOL: {
@@ -93,7 +93,7 @@ void PyEnvironment::createGlobalVar(PyConstants::VarTypes vartype, const std::st
             globalVars.insert(
                     std::make_pair(
                             varName,
-                            std::unique_ptr<PyInt>(new PyInt(boost::any_cast<mpz_int>(value)))
+                            std::unique_ptr<PyInt>(new PyInt(boost::any_cast<int>(value)))
                     ));
             break;
         }

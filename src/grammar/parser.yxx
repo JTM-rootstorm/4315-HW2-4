@@ -89,7 +89,7 @@ variable : VARIABLE {
     if (pyObject != nullptr) {
         switch( pyObject->type ) {
             case PyConstants::VarTypes::NUMBER: {
-                    mpz_int val = pyObject->getData<mpz_int>();
+                    int val = pyObject->getData<int>();
                     $$ = new ExprConstant(val);
                     break;
             }
@@ -217,7 +217,7 @@ assignment : VARIABLE '=' expr {
 
              switch ( type ) {
                 case PyConstants::VarTypes::NUMBER: {
-                    val = boost::any($3->evaluate()->getData<mpz_int>());
+                    val = boost::any($3->evaluate()->getData<int>());
                     break;
                 }
                 case PyConstants::VarTypes::BOOL: {

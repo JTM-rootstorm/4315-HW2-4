@@ -3,7 +3,6 @@
 %{
     /* C++ string header, for string ops below */
     #include <string>
-    #include <boost/multiprecision/gmp.hpp>
 
     /* Implementation of yyFlexScanner */
     #include "../scanner.hpp"
@@ -43,7 +42,7 @@
 }
 
 [0-9]+ {
-    yylval->build<boost::multiprecision::mpz_int>(boost::multiprecision::mpz_int(yytext));
+    yylval->build<int>(atoi(yytext));
     return token::INTEGER;
 }
 

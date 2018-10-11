@@ -15,8 +15,6 @@ endmacro(use_cxx11)
 use_cxx11()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/modules")
-
 find_package(Boost COMPONENTS regex REQUIRED)
 
 find_package(BISON REQUIRED)
