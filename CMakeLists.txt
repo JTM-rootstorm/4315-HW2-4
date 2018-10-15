@@ -35,7 +35,7 @@ if(BISON_FOUND)
                     --feature=all
                     --report=state
                     ${CMAKE_SOURCE_DIR}/src/grammar/parser.yxx
-            COMMENT "Generating parser.cpp"
+            COMMENT "Generating parser.tab.cc"
     )
 endif(BISON_FOUND)
 
@@ -47,7 +47,7 @@ if(FLEX_FOUND)
             COMMAND ${FLEX_EXECUTABLE}
                     --outfile=${CMAKE_SOURCE_DIR}/src/rcdgen/lexer.yy.cc
                     ${CMAKE_SOURCE_DIR}/src/grammar/lexer.lxx
-            COMMENT "Generating lexer.cpp"
+            COMMENT "Generating lexer.yy.cc"
     )
 endif(FLEX_FOUND)
 
@@ -57,14 +57,21 @@ set(SOURCES
 
         src/boolexpr.hpp
         src/expr.hpp
-        src/py/pyenvironment.hpp    src/py/pyenvironment.cpp
-        src/py/pyconsole.hpp        src/py/pyconsole.cpp
+        src/scanner.hpp
+        src/driver.hpp                  src/driver.cpp
+
+        src/py/pyenvironment.hpp        src/py/pyenvironment.cpp
+        src/py/pyconsole.hpp            src/py/pyconsole.cpp
         src/py/pyobject.hpp
         src/py/pyconstants.hpp
-        src/scanner.hpp
-        src/driver.hpp              src/driver.cpp
         src/py/pyerrors.hpp
-        src/py/pyfunction.hpp       src/py/pyfunction.cpp src/pyfunctionbuilder.hpp)
+        src/py/pyfunction.hpp           src/py/pyfunction.cpp
+        src/py/pyfunctionbuilder.hpp    src/py/pyfunctionbuilder.cpp
+        src/py/pystatement.hpp          src/py/pystatement.cpp
+        src/py/pyifblock.hpp            src/py/pyifblock.cpp
+
+        src/py/env-modules/pymodule.hpp
+        src/py/env-modules/mod_functionhelper.hpp src/py/env-modules/mod_functionhelper.cpp)
 
 add_executable(mypython ${SOURCES})
 target_include_directories(mypython PRIVATE ${Boost_INCLUDE_DIR})

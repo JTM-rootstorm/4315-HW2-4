@@ -5,7 +5,6 @@
 #include <sstream>
 
 #include "driver.hpp"
-#include "scanner.hpp"
 #include "py/pyenvironment.hpp"
 
 namespace Py {
@@ -47,7 +46,7 @@ namespace Py {
     }
 
     void Driver::error(const std::string &m) {
-        std::cerr << m << std::endl;
+        std::cerr << "bep " << m << std::endl;
     }
 }
 

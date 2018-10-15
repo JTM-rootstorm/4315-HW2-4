@@ -15,7 +15,7 @@ namespace Py {
     public:
         Driver() = default;
 
-        virtual ~Driver();
+        virtual ~Driver() = default;
 
         std::string streamName;
 

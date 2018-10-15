@@ -2,6 +2,7 @@
 
 %{
     /* C++ string header, for string ops below */
+    #include <iostream>
     #include <string>
 
     /* Implementation of yyFlexScanner */
@@ -22,11 +23,16 @@
 %option c++
 %option yyclass="Py::Scanner"
 %option batch
-%option debug
 %option noyywrap nounput
 %option stack
 
-%x comment
+%x DEFFUNC
+
+FUNCDEF         def[ ]+[A-Za-z_]+[\w]+\(.*\)\:\n("   ".+\n("   ".+\n)*((\n)?)+)+
+FUNCDECL        def[ ]+
+FUNCSIG         [A-Za-z_]+[A-Za-z0-9_]+\(.*\):\n
+FUNCBOD         ("   ".+)\n(("   ")("   ")+.+\n)*
+FUNCTAIL        ("   ".+\n("   ".+\n)*((\n)?)+)+
 
 %%
 %{
@@ -36,56 +42,31 @@
 
 "# "[^\n]*  /* consume comments */
 
-(\"[^\n]\") {
-    yylval->build<std::string>(yytext);
-    return token::STRING;
+{FUNCDECL} {
+    std::cout << "yep" << std::endl;
+    BEGIN(DEFFUNC);
 }
 
-[0-9]+ {
-    yylval->build<int>(atoi(yytext));
-    return token::INTEGER;
+<DEFFUNC>{FUNCSIG} {
+    std::cout << "the sig" << std::endl;
 }
 
-[Tt]rue|[Ff]alse {
-    yylval->build<bool>(yytext);
-    return token::BOOLEAN;
+<DEFFUNC>{FUNCTAIL} {
+    std::cout << "Found end" << std::endl;
+    std::cout << yytext << std::endl;
+    BEGIN(INITIAL);
 }
 
-[ \t\r]+ {
-    yylloc->step();
-}
-
-print {
-    return token::PYFUNCTION;
-}
-
-if|for {
-    return token::KEYWORD;
-}
-
-(def[ ]+[A-Za-z_]+[\w]+) {
-    yylval->build<std::string>(yytext);
-    return token::DEFFUNCTION;
-}
-
-(\((([^\n])+(,[^\n])*)*\)): {
-    yylval->build<std::string>(yytext);
-    return token::FUNCSIG;
-}
-
-([A-Za-z_]+[A-Za-z0-9_]*) {
-    yylval->build<std::string>(yytext);
-    return token::VARIABLE;
+\".*\" {
+    std::cout << "Found string: " << yytext << std::endl;
 }
 
 \n {
-    yylloc->lines(yyleng);
-    yylloc->step();
-    return token::EOL;
+
 }
 
 . { // have bison eat the rest
-    return static_cast<token_type>(*yytext);
+    // return static_cast<token_type>(*yytext);
 }
 
 %%

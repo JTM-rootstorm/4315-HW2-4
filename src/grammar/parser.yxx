@@ -3,7 +3,6 @@
 
 %skeleton "lalr1.cc"
 %require  "3.0"
-%debug
 %start start
 %defines
 %define api.namespace {Py}
@@ -61,8 +60,7 @@
 %token <std::string>    STRING       "string"
 %token <std::string>    VARIABLE     "variable"
 %token <std::string>    PYFUNCTION   "built-in function"
-%token <std::string>    DEFFUNCTION  "user-defined function"
-%token <std::string>    FUNCSIG      "function signature"
+%token <std::string>    DEFFUNCTION  "user-defined function signature"
 %token <std::string>    KEYWORD      "keyword"
 
 %type <class BaseExpressionNode*>     constant variable
@@ -84,7 +82,7 @@ constant : INTEGER {
 }
 
 variable : VARIABLE {
-    PyObject *pyObject = PyEnvironment::Instance().getGlobalVariable($1);
+    std::shared_ptr<PyObject> pyObject = PyEnvironment::Instance().getVar($1);
 
     if (pyObject != nullptr) {
         switch( pyObject->type ) {
@@ -106,8 +104,6 @@ variable : VARIABLE {
                     // TODO: throw an error here or something
                     break;
         }
-
-        pyObject = nullptr;
     }
     else {
         // TODO: throw error
@@ -229,19 +225,15 @@ assignment : VARIABLE '=' expr {
                     break;
              }
 
-             PyEnvironment::Instance().setGlobalVar($1, val, type);
+             PyEnvironment::Instance().setVar($1, val, type);
 
              delete $3;
            }
            | VARIABLE '=' STRING {
              PyString pyString(std::string($3));
 
-             PyEnvironment::Instance().setGlobalVar($1, pyString);
+             PyEnvironment::Instance().setVar($1, pyString);
            }
-
-pyfunction : PYFUNCTION FUNCSIG {
-             // nothing yet
-          }
 
 start     : %empty
           | start EOL
@@ -253,8 +245,6 @@ start     : %empty
           | start expr EOL {
             PyEnvironment::Instance().exprContext.expressions.push_back($2);
           }
-          | start pyfunction EOL
-          | start pyfunction END
 
 
 %%
