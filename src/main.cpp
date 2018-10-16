@@ -46,9 +46,12 @@ int main(int argc, char** argv) {
                            "\n"
                            "test()";
 
-    std::string printStr = "print(\"ok\")";
+    std::string printStr = "x = 1\n"
+                           "if x == 1:\n"
+                           "   x = 2\n"
+                           "print(\"x = \",x)";
 
-    PyEnvironment::Instance().pyDriver.parse_string(defStr);
+    PyEnvironment::Instance().parseStatement(printStr);
 
     return EXIT_SUCCESS;
 }

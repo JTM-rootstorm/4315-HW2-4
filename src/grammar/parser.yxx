@@ -63,6 +63,8 @@
 %token <std::string>    FUNCCALL     "function call"
 %token <std::string>    KEYWORD      "keyword"
 
+%token <std::string>    BOOLEQ       "=="
+
 %type <class BaseExpressionNode*>     constant variable
 %type <class BaseExpressionNode*>     atomexpr powerexpr unaryexpr mulexpr addexpr expr
 
@@ -166,13 +168,13 @@ addexpr   : mulexpr {
 logicalcompare : addexpr {
                  $$ = $1;
                }
-               | addexpr "<" addexpr {
+               | addexpr '<' addexpr {
                  $$ = new BoolExprLessThan($1, $3);
                }
                | addexpr "<=" addexpr {
                  $$ = new BoolExprLessThan($1, $3, true);
                }
-               | addexpr ">" addexpr {
+               | addexpr '>' addexpr {
                  $$ = new BoolExprGreaterThan($1, $3);
                }
                | addexpr ">=" addexpr {
@@ -182,7 +184,7 @@ logicalcompare : addexpr {
 logicaleq : logicalcompare {
             $$ = $1;
           }
-          | logicalcompare "==" logicalcompare {
+          | logicalcompare BOOLEQ logicalcompare {
             $$ = new BoolExprEq($1, $3);
           }
           | logicalcompare "!=" logicalcompare {
@@ -218,7 +220,6 @@ function  : FUNCCALL {
           }
 
 assignment : VARIABLE '=' expr {
-             std::cout << "attempting varset " << $1 << std::endl;
              std::shared_ptr<PyObject> pyObject = $3->evaluate();
 
              auto type = pyObject->type;

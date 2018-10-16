@@ -17,20 +17,6 @@ public:
     virtual std::shared_ptr<PyObject> evaluate() const = 0;
 };
 
-class ExprVoid : public BaseExpressionNode {
-public:
-    explicit ExprVoid(std::shared_ptr<PyObject> _object) : BaseExpressionNode() {
-        object = std::move(_object);
-    };
-
-    std::shared_ptr<PyObject> evaluate() const override {
-        return object;
-    }
-
-private:
-    std::shared_ptr<PyObject> object;
-};
-
 class ExprConstant : public BaseExpressionNode {
 public:
     explicit ExprConstant(int _value) : BaseExpressionNode() {

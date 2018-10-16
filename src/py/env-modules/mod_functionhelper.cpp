@@ -189,7 +189,7 @@ void FunctionModule::runFunction(const std::string &sig) {
         }
     }
 
-    regex = R"(("[\w ,\.\-]+")|([A-Za-z_]+[A-Za-z0-9_]*)|([\d]+(\.[\d]+)?))";
+    regex = R"(("[\w ,\.\-=+*\/!@#$%^&*()|{}\[\];\'<>?]+")|([A-Za-z_]+[A-Za-z0-9_]*)|([\d]+(\.[\d]+)?))";
 
     for (boost::sregex_iterator i = boost::sregex_iterator(sig.begin(), sig.end(), regex);
          i != boost::sregex_iterator(); ++i) {

@@ -29,7 +29,7 @@
 %option noyywrap nounput
 %option stack
 
-%x DEFFUNC
+%x DEFFUNC IFDEFINE
 
 FUNCDEF         def[ ]+[A-Za-z_]+[\w]+\(.*\)\:\n("   ".+\n("   ".+\n)*((\n)?)+)+
 FUNCDECL        def[ ]+
@@ -37,6 +37,9 @@ FUNCSIG         [A-Za-z_]+[A-Za-z0-9_]+\(.*\):\n
 FUNCBOD         ("   ".+)\n(("   ")("   ")+.+\n)*
 FUNCTAIL        ("   ".+\n("   ".+\n)*((\n)?)+)+
 FUNCCALL        [A-Za-z_]+[A-Za-z0-9_]+\(.*\)
+MAINIF          if[ ]+
+IFEXPR          .+\:(\n)
+IFBODY          (("   ".+)((\n)?)+)+
 
 %%
 %{
@@ -70,6 +73,25 @@ FUNCCALL        [A-Za-z_]+[A-Za-z0-9_]+\(.*\)
     return token::STRING;
 }
 
+{MAINIF} {
+    BEGIN(IFDEFINE);
+}
+
+<IFDEFINE>{IFEXPR} {
+    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+}
+
+<IFDEFINE>{IFBODY} {
+    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+    PyEnvironment::Instance().constructMainIf();
+    BEGIN(INITIAL);
+}
+
+"==" {
+    yylval->build<std::string>(yytext);
+    return token::BOOLEQ;
+}
+
 [0-9]+ {
     yylval->build<int>(atoi(yytext));
     return token::INTEGER;
@@ -78,8 +100,15 @@ FUNCCALL        [A-Za-z_]+[A-Za-z0-9_]+\(.*\)
 [Tt]rue|[Ff]alse {
     std::string temp = std::string(yytext);
     boost::algorithm::to_lower(temp);
-    yylval->build<std::string>(temp);
-    return token::BOOLEAN;
+
+    if (temp == "true") {
+        yylval->build<int>(1);
+    }
+    else if (temp == "false") {
+        yylval->build<int>(0);
+    }
+
+    return token::INTEGER;
 }
 
 [A-Za-z_]+[A-Za-z0-9_]* {

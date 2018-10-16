@@ -11,15 +11,16 @@
 
 class BoolExprConstant : public BaseExpressionNode {
 public:
-    explicit BoolExprConstant(bool _value) : BaseExpressionNode(), val(_value) {};
+    explicit BoolExprConstant(int _value) : BaseExpressionNode() {
+        object = std::make_shared<PyBool>(_value);
+    }
 
     std::shared_ptr<PyObject> evaluate() const override {
-        std::shared_ptr<PyBool> pyBool = std::make_shared<PyBool>(val);
-        return std::dynamic_pointer_cast<PyObject>(pyBool);
+        return object;
     }
 
 private:
-    bool val;
+    std::shared_ptr<PyObject> object;
 };
 
 class BoolExprAnd : public BaseExpressionNode {
@@ -33,12 +34,11 @@ public:
     }
 
     std::shared_ptr<PyObject> evaluate() const override {
-        auto leftVal = left->evaluate()->getData<bool>();
-        auto rightVal = right->evaluate()->getData<bool>();
-        bool result = leftVal && rightVal;
+        auto leftVal = left->evaluate()->getData<int>();
+        auto rightVal = right->evaluate()->getData<int>();
+        int result = leftVal && rightVal;
 
-        std::shared_ptr<PyBool> pyBool = std::make_shared<PyBool>(result);
-        return std::dynamic_pointer_cast<PyObject>(pyBool);
+        return std::make_shared<PyInt>(result);
     }
 
 private:
@@ -56,12 +56,11 @@ public:
     }
 
     std::shared_ptr<PyObject> evaluate() const override {
-        auto leftVal = left->evaluate()->getData<bool>();
-        auto rightVal = right->evaluate()->getData<bool>();
-        bool result = leftVal || rightVal;
+        auto leftVal = left->evaluate()->getData<int>();
+        auto rightVal = right->evaluate()->getData<int>();
+        int result = leftVal || rightVal;
 
-        std::shared_ptr<PyBool> pyBool = std::make_shared<PyBool>(result);
-        return std::dynamic_pointer_cast<PyObject>(pyBool);
+        return std::make_shared<PyInt>(result);
     }
 
 private:
@@ -76,10 +75,9 @@ public:
     ~BoolExprNot() override { delete node; }
 
     std::shared_ptr<PyObject> evaluate() const override {
-        auto result = !(node->evaluate()->getData<bool>());
+        auto result = !(node->evaluate()->getData<int>());
 
-        std::shared_ptr<PyBool> pyBool = std::make_shared<PyBool>(result);
-        return std::dynamic_pointer_cast<PyObject>(pyBool);
+        return std::make_shared<PyInt>(result);
     }
 
 private:
@@ -97,13 +95,12 @@ public:
     }
 
     std::shared_ptr<PyObject> evaluate() const override {
-        auto leftVal = left->evaluate()->getData<bool>();
-        auto rightVal = right->evaluate()->getData<bool>();
+        auto leftVal = left->evaluate()->getData<int>();
+        auto rightVal = right->evaluate()->getData<int>();
 
-        bool result = leftVal != rightVal;
+        int result = leftVal != rightVal;
 
-        std::shared_ptr<PyBool> pyBool = std::make_shared<PyBool>(result);
-        return std::dynamic_pointer_cast<PyObject>(pyBool);
+        return std::make_shared<PyInt>(result);
     }
 
 private:
@@ -122,13 +119,12 @@ public:
     }
 
     std::shared_ptr<PyObject> evaluate() const override {
-        auto leftVal = left->evaluate()->getData<bool>();
-        auto rightVal = right->evaluate()->getData<bool>();
+        auto leftVal = left->evaluate()->getData<int>();
+        auto rightVal = right->evaluate()->getData<int>();
 
-        bool result = leftVal == rightVal;
+        int result = leftVal == rightVal;
 
-        std::shared_ptr<PyBool> pyBool = std::make_shared<PyBool>(result);
-        return std::dynamic_pointer_cast<PyObject>(pyBool);
+        return std::make_shared<PyInt>(result);
     }
 
 private:
@@ -147,10 +143,10 @@ public:
     }
 
     std::shared_ptr<PyObject> evaluate() const override {
-        auto leftVal = left->evaluate()->getData<bool>();
-        auto rightVal = right->evaluate()->getData<bool>();
+        auto leftVal = left->evaluate()->getData<int>();
+        auto rightVal = right->evaluate()->getData<int>();
 
-        bool result;
+        int result;
 
         if(alsoEq) {
             result = leftVal <= rightVal;
@@ -158,8 +154,7 @@ public:
             result = leftVal < rightVal;
         }
 
-        std::shared_ptr<PyBool> pyBool = std::make_shared<PyBool>(result);
-        return std::dynamic_pointer_cast<PyObject>(pyBool);
+        return std::make_shared<PyInt>(result);
     }
 
 private:
@@ -180,10 +175,10 @@ public:
     }
 
     std::shared_ptr<PyObject> evaluate() const override {
-        auto leftVal = left->evaluate()->getData<bool>();
-        auto rightVal = right->evaluate()->getData<bool>();
+        auto leftVal = left->evaluate()->getData<int>();
+        auto rightVal = right->evaluate()->getData<int>();
 
-        bool result;
+        int result;
 
         if(alsoEq) {
             result = leftVal >= rightVal;
@@ -191,8 +186,7 @@ public:
             result = leftVal > rightVal;
         }
 
-        std::shared_ptr<PyBool> pyBool = std::make_shared<PyBool>(result);
-        return std::dynamic_pointer_cast<PyObject>(pyBool);
+        return std::make_shared<PyInt>(result);
     }
 
 private:

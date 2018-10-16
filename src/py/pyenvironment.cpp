@@ -1,6 +1,8 @@
 #include <utility>
+#include <sstream>
 
 #include "pyenvironment.hpp"
+#include "statements/pyifblock.hpp"
 
 void PyEnvironment::setVar(const std::string &varName, boost::any value, PyConstants::VarTypes vartype) {
     if (localFuncStack.empty()) {
@@ -10,14 +12,6 @@ void PyEnvironment::setVar(const std::string &varName, boost::any value, PyConst
     std::vector<boost::any> localargs = {boost::any(vartype), boost::any(varName), value};
 
     modules.at("localFunc")->evaluate("setVar", localargs);
-}
-
-void PyEnvironment::setVar(const std::string &varName, PyObject &object) {
-    if (localFuncStack.empty()) {
-        setGlobalVar(varName, object);
-        return;
-    }
-    modules.at("localFunc")->evaluate("setVar", varName, object);
 }
 
 std::shared_ptr<PyObject> PyEnvironment::getVar(const std::string &varName) {
@@ -68,20 +62,6 @@ void PyEnvironment::setGlobalVar(const std::string &varName, boost::any value,
         }
     } else if (!nameUsed && vartype != PyConstants::VarTypes::NONE) {
         createGlobalVar(vartype, varName, value);
-    }
-}
-
-void PyEnvironment::setGlobalVar(const std::string &varName, PyObject &object) {
-    bool nameUsed = varNameUsed(varName);
-
-    if (nameUsed && object.type != PyConstants::VarTypes::NONE) {
-        if (globalVars.at(varName)->type == object.type) {
-            modifyGlobalVar(object.type, varName, object.getData<boost::any>());
-        } else {
-            mutateGlobalVar(object.type, varName, object.getData<boost::any>());
-        }
-    } else if (!nameUsed && object.type != PyConstants::VarTypes::NONE) {
-        createGlobalVar(object.type, varName, object.getData<boost::any>());
     }
 }
 
@@ -176,4 +156,15 @@ PyEnvironment::~PyEnvironment() {
 void PyEnvironment::parseStatement(const std::string &expression) {
     Driver driver;
     driver.parse_string(expression);
+}
+
+void PyEnvironment::constructMainIf() {
+    std::stringstream ss;
+    for (auto var : lexxerQueue) {
+        ss << boost::any_cast<std::string>(var);
+    }
+    lexxerQueue.clear();
+
+    PyIfBlock ifBlock(ss.str());
+    ifBlock.evaluate();
 }

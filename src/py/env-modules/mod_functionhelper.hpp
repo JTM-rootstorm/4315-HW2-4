@@ -12,7 +12,6 @@ class PyFunction;
 class FunctionModule : public PyModule {
 public:
     FunctionModule() : PyModule() {
-        pyFunctions = {};
         initStandardFunctions();
     }
     ~FunctionModule() = default;
