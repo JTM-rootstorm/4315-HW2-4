@@ -60,18 +60,18 @@
 %token <std::string>    STRING       "string"
 %token <std::string>    VARIABLE     "variable"
 %token <std::string>    PYFUNCTION   "built-in function"
-%token <std::string>    DEFFUNCTION  "user-defined function signature"
+%token <std::string>    FUNCCALL     "function call"
 %token <std::string>    KEYWORD      "keyword"
 
 %type <class BaseExpressionNode*>     constant variable
 %type <class BaseExpressionNode*>     atomexpr powerexpr unaryexpr mulexpr addexpr expr
 
-%destructor { delete $$; } constant variable
-%destructor { delete $$; } atomexpr powerexpr unaryexpr mulexpr addexpr expr
+// %destructor { delete $$; } constant variable
+// %destructor { delete $$; } atomexpr powerexpr unaryexpr mulexpr addexpr expr
 
 %type <class BaseExpressionNode*>     logicalcompare logicaleq logicaland logicalor
 
-%destructor { delete $$; } logicalcompare logicaleq logicaland logicalor
+// %destructor { delete $$; } logicalcompare logicaleq logicaland logicalor
 
 %%
 
@@ -195,6 +195,9 @@ logicaland : logicaleq {
            | logicaleq "&&" logicaleq {
              $$ = new BoolExprAnd($1, $3);
            }
+           | logicaleq "and" logicaleq {
+             $$ = new BoolExprAnd($1, $3);
+           }
 
 logicalor : logicaland {
             $$ = $1;
@@ -202,22 +205,32 @@ logicalor : logicaland {
           | logicaland "||" logicaland {
             $$ = new BoolExprOr($1, $3);
           }
+          | logicaland "or" logicaland {
+            $$ = new BoolExprOr($1, $3);
+          }
 
 expr      : logicalor {
             $$ = $1;
           }
 
+function  : FUNCCALL {
+            PyEnvironment::Instance().runFunction($1);
+          }
+
 assignment : VARIABLE '=' expr {
-             auto type = $3->evaluate()->type;
+             std::cout << "attempting varset " << $1 << std::endl;
+             std::shared_ptr<PyObject> pyObject = $3->evaluate();
+
+             auto type = pyObject->type;
              boost::any val;
 
              switch ( type ) {
                 case PyConstants::VarTypes::NUMBER: {
-                    val = boost::any($3->evaluate()->getData<int>());
+                    val = boost::any(pyObject->getData<int>());
                     break;
                 }
                 case PyConstants::VarTypes::BOOL: {
-                    val = boost::any($3->evaluate()->getData<bool>());
+                    val = boost::any(pyObject->getData<bool>());
                     break;
                 }
                 default:
@@ -232,7 +245,10 @@ assignment : VARIABLE '=' expr {
            | VARIABLE '=' STRING {
              PyString pyString(std::string($3));
 
-             PyEnvironment::Instance().setVar($1, pyString);
+             PyEnvironment::Instance().setVar($1, boost::any(pyString.getData<std::string>()), pyString.type);
+           }
+           | VARIABLE '=' FUNCCALL {
+
            }
 
 start     : %empty
@@ -245,6 +261,8 @@ start     : %empty
           | start expr EOL {
             PyEnvironment::Instance().exprContext.expressions.push_back($2);
           }
+          | start function EOL
+          | start function END
 
 
 %%

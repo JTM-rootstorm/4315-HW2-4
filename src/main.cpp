@@ -1,4 +1,6 @@
-#include "driver.hpp"
+#include <sstream>
+
+#include "py/pyenvironment.hpp"
 
 int main(int argc, char** argv) {
 
@@ -26,9 +28,27 @@ int main(int argc, char** argv) {
     std::unique_ptr<PyFunction> pyFunction = pyFunctionBuilder.init(func);
     std::cout << pyFunction->getName() << std::endl;*/
 
-    Py::Driver driver;
+    /*std::string ifblock = "   if something > that:\n"
+                          "      eat big\n"
+                          "      big big";
 
-    driver.parse_string(func, "func");
+    boost::trim(ifblock);
+    boost::regex ifregex{R"(^if)"};
+    boost::smatch s;
+
+    if(boost::regex_search(ifblock, s, ifregex)) {
+        std::cout << ifblock << std::endl;
+    }*/
+
+    std::string defStr = "def test():\n"
+                           "   x = \"ye\"\n"
+                           "   print(x)\n"
+                           "\n"
+                           "test()";
+
+    std::string printStr = "print(\"ok\")";
+
+    PyEnvironment::Instance().pyDriver.parse_string(defStr);
 
     return EXIT_SUCCESS;
 }

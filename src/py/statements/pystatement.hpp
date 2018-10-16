@@ -12,12 +12,12 @@
 class PyStatement {
 public:
     PyStatement() = default;
-    explicit PyStatement(std::string _statement) : statement(std::move(_statement)) {};
+    explicit PyStatement(std::string _statement) : expression(std::move(_statement)) {};
 
     virtual void evaluate();
 
 protected:
-    std::string statement;
+    std::string expression;
 };
 
 #endif //MYPYTHON_PYSTATEMENT_HPP

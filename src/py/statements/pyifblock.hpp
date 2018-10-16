@@ -8,9 +8,10 @@
 
 class PyIfBlock : public PyStatement {
 public:
-    explicit PyIfBlock(std::string block);
+    explicit PyIfBlock(std::string expr);
 
     void evaluate() override;
+
 private:
     std::vector<std::unique_ptr<PyStatement>> trueBlock;
     std::vector<std::unique_ptr<PyStatement>> falseBlock;

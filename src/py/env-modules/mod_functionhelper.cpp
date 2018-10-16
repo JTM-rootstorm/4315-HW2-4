@@ -1,25 +1,47 @@
 #include "mod_functionhelper.hpp"
 
 #include "../pyenvironment.hpp"
+#include "../stdfunction/stdinclude.hpp"
 
-void FunctionModule::evaluate(std::string func, std::vector<boost::any> args) {
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/regex.hpp>
+
+void FunctionModule::evaluate(const std::string &func, std::vector<boost::any> args) {
     if (func == "gen") {
         generateFunction(args);
         return;
     }
     else if (func == "setVar") {
-        std::string funcName = PyEnvironment::Instance().runningFunc;
+        std::string funcName = PyEnvironment::Instance().localFuncStack.top();
         setFunctionVar(funcName, args);
+        return;
+    }
+    else if (func == "getVar") {
+        std::string funcName = PyEnvironment::Instance().localFuncStack.top();
+        std::string varName = boost::any_cast<std::string>(args[0]);
+
+        getFunctionVar(funcName, varName);
+        return;
+    }
+    else if (func == "evalFunc") {
+        std::string sig = boost::any_cast<std::string>(args[0]);
+        boost::trim(sig);
+
+        runFunction(sig);
         return;
     }
 }
 
-void FunctionModule::evaluate(std::string func, PyObject &object) {
-
+void FunctionModule::evaluate(const std::string &func, const std::string &varName, PyObject &object) {
+    if (func == "setVar") {
+        std::string funcName = PyEnvironment::Instance().localFuncStack.top();
+        setFunctionVar(funcName, varName, object);
+        return;
+    }
 }
 
 bool FunctionModule::varNameUsed(std::string varName) {
-    std::string currentFunc = PyEnvironment::Instance().runningFunc;
+    std::string currentFunc = PyEnvironment::Instance().localFuncStack.top();
 
     auto iter = pyFunctions.at(currentFunc)->localVars.find(varName);
 
@@ -33,6 +55,16 @@ void FunctionModule::generateFunction(std::vector<boost::any> funcStrings) {
             .build();
 
     pyFunctions.emplace(function->getName(), std::move(function));
+}
+
+void FunctionModule::getFunctionVar(const std::string &funcName, const std::string &varName) {
+    if (!varNameUsed(varName)) {
+        PyEnvironment::Instance().pyConsole.logError(PyErrors::ERR_TYPE::NameErrorFunction, varName.c_str(), funcName.c_str());
+        return;
+    }
+
+    std::shared_ptr<PyObject> pyObject = pyFunctions.at(funcName)->localVars.at(varName);
+    PyEnvironment::Instance().funcReturnStack.push(pyObject);
 }
 
 void FunctionModule::setFunctionVar(const std::string &funcName, std::vector<boost::any> args) {
@@ -50,6 +82,20 @@ void FunctionModule::setFunctionVar(const std::string &funcName, std::vector<boo
         }
     } else if (!nameUsed && vartype != PyConstants::VarTypes::NONE) {
         createFunctionVar(funcName, vartype, varName, value);
+    }
+}
+
+void FunctionModule::setFunctionVar(const std::string &funcName, const std::string &varName, PyObject &object) {
+    bool nameUsed = varNameUsed(varName);
+
+    if (nameUsed && object.type != PyConstants::VarTypes::NONE) {
+        if (pyFunctions.at(funcName)->localVars.at(varName)->type == object.type) {
+            modifyFunctionVar(funcName, object.type, varName, object.getData<boost::any>());
+        } else {
+            mutateFunctionVar(funcName, object.type, varName, object.getData<boost::any>());
+        }
+    } else if (!nameUsed && object.type != PyConstants::VarTypes::NONE) {
+        createFunctionVar(funcName, object.type, varName, object.getData<boost::any>());
     }
 }
 
@@ -123,4 +169,39 @@ void FunctionModule::createFunctionVar(const std::string &funcName, PyConstants:
         default:
             break;
     }
+}
+
+void FunctionModule::runFunction(const std::string &sig) {
+    boost::regex regex{R"(^[A-Za-z_]+[\w]+)"};
+    boost::smatch match;
+    std::vector<std::string> results;
+
+    std::string sigcop = sig;
+    std::string funcName;
+
+    if (boost::regex_search(sigcop, match, regex)) {
+        funcName = match.str();
+        boost::trim(funcName);
+
+        std::string::size_type i = sigcop.find(funcName);
+        if (i != std::string::npos) {
+            sigcop.erase(i,funcName.size());
+        }
+    }
+
+    regex = R"(("[\w ,\.\-]+")|([A-Za-z_]+[A-Za-z0-9_]*)|([\d]+(\.[\d]+)?))";
+
+    for (boost::sregex_iterator i = boost::sregex_iterator(sig.begin(), sig.end(), regex);
+         i != boost::sregex_iterator(); ++i) {
+        boost::smatch m = *i;
+
+        results.push_back(m.str());
+    }
+
+    pyFunctions.at(funcName)->evaluate(results);
+}
+
+void FunctionModule::initStandardFunctions() {
+    std::unique_ptr<PyFunction> print = std::unique_ptr<StdPrint>(new StdPrint());
+    pyFunctions.insert({"print", std::move(print)});
 }

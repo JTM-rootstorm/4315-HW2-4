@@ -2,8 +2,11 @@
 
 %{
     /* C++ string header, for string ops below */
-    #include <iostream>
     #include <string>
+    #include <iostream>
+    #include <boost/algorithm/string.hpp>
+
+    #include "../py/pyenvironment.hpp"
 
     /* Implementation of yyFlexScanner */
     #include "../scanner.hpp"
@@ -33,6 +36,7 @@ FUNCDECL        def[ ]+
 FUNCSIG         [A-Za-z_]+[A-Za-z0-9_]+\(.*\):\n
 FUNCBOD         ("   ".+)\n(("   ")("   ")+.+\n)*
 FUNCTAIL        ("   ".+\n("   ".+\n)*((\n)?)+)+
+FUNCCALL        [A-Za-z_]+[A-Za-z0-9_]+\(.*\)
 
 %%
 %{
@@ -43,30 +47,57 @@ FUNCTAIL        ("   ".+\n("   ".+\n)*((\n)?)+)+
 "# "[^\n]*  /* consume comments */
 
 {FUNCDECL} {
-    std::cout << "yep" << std::endl;
     BEGIN(DEFFUNC);
 }
 
 <DEFFUNC>{FUNCSIG} {
-    std::cout << "the sig" << std::endl;
+    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
 }
 
 <DEFFUNC>{FUNCTAIL} {
-    std::cout << "Found end" << std::endl;
-    std::cout << yytext << std::endl;
+    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+    PyEnvironment::Instance().buildFunction();
     BEGIN(INITIAL);
 }
 
+{FUNCCALL} {
+    yylval->build<std::string>(yytext);
+    return token::FUNCCALL;
+}
+
 \".*\" {
-    std::cout << "Found string: " << yytext << std::endl;
+    yylval->build<std::string>(yytext);
+    return token::STRING;
+}
+
+[0-9]+ {
+    yylval->build<int>(atoi(yytext));
+    return token::INTEGER;
+}
+
+[Tt]rue|[Ff]alse {
+    std::string temp = std::string(yytext);
+    boost::algorithm::to_lower(temp);
+    yylval->build<std::string>(temp);
+    return token::BOOLEAN;
+}
+
+[A-Za-z_]+[A-Za-z0-9_]* {
+    yylval->build<std::string>(yytext);
+    return token::VARIABLE;
+}
+
+[ \t\r]+ {
+    yylloc->step();
 }
 
 \n {
-
+    yylloc->lines(yyleng);
+    return token::EOL;
 }
 
 . { // have bison eat the rest
-    // return static_cast<token_type>(*yytext);
+    return static_cast<token_type>(*yytext);
 }
 
 %%

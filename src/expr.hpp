@@ -1,5 +1,3 @@
-#include <utility>
-
 /* Modified from https://github.com/bingmann/flex-bison-cpp-example/blob/master/src/expression.h
  * but really only to handle arbitrary precision */
 
@@ -8,6 +6,7 @@
 #include <cmath>
 #include <memory>
 #include <vector>
+#include <utility>
 
 #include "py/pyobject.hpp"
 
@@ -18,17 +17,32 @@ public:
     virtual std::shared_ptr<PyObject> evaluate() const = 0;
 };
 
-
-class ExprConstant : public BaseExpressionNode {
+class ExprVoid : public BaseExpressionNode {
 public:
-    explicit ExprConstant(int _value) : BaseExpressionNode(), val(_value) {}
+    explicit ExprVoid(std::shared_ptr<PyObject> _object) : BaseExpressionNode() {
+        object = std::move(_object);
+    };
 
     std::shared_ptr<PyObject> evaluate() const override {
-        return std::make_shared<PyInt>(val);
+        return object;
     }
 
 private:
-    int val;
+    std::shared_ptr<PyObject> object;
+};
+
+class ExprConstant : public BaseExpressionNode {
+public:
+    explicit ExprConstant(int _value) : BaseExpressionNode() {
+        object = std::make_shared<PyInt>(_value);
+    }
+
+    std::shared_ptr<PyObject> evaluate() const override {
+        return object;
+    }
+
+private:
+    std::shared_ptr<PyObject> object;
 };
 
 

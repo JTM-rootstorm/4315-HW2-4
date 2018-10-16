@@ -3,27 +3,43 @@
 #include "pyenvironment.hpp"
 
 void PyEnvironment::setVar(const std::string &varName, boost::any value, PyConstants::VarTypes vartype) {
-    if (runningFunc.empty()) {
+    if (localFuncStack.empty()) {
         setGlobalVar(varName, std::move(value), vartype);
         return;
     }
-
     std::vector<boost::any> localargs = {boost::any(vartype), boost::any(varName), value};
 
     modules.at("localFunc")->evaluate("setVar", localargs);
 }
 
 void PyEnvironment::setVar(const std::string &varName, PyObject &object) {
-    if (runningFunc.empty()) {
+    if (localFuncStack.empty()) {
         setGlobalVar(varName, object);
         return;
     }
+    modules.at("localFunc")->evaluate("setVar", varName, object);
 }
 
 std::shared_ptr<PyObject> PyEnvironment::getVar(const std::string &varName) {
-    if (runningFunc.empty()) return getGlobalVariable(varName);
+    if (localFuncStack.empty()) return getGlobalVariable(varName);
 
-    return nullptr;
+    std::vector<boost::any> args{boost::any(varName)};
+    modules.at("localFunc")->evaluate("getVar", args);
+
+    std::shared_ptr<PyObject> pyObject = funcReturnStack.top();
+    funcReturnStack.pop();
+
+    return pyObject;
+}
+
+void PyEnvironment::runFunction(std::string funcSig) {
+    std::vector<boost::any> args{boost::any(funcSig)};
+    modules.at("localFunc")->evaluate("evalFunc", args);
+}
+
+void PyEnvironment::buildFunction() {
+    modules.at("localFunc")->evaluate("gen", lexxerQueue);
+    lexxerQueue.clear();
 }
 
 std::shared_ptr<PyObject> PyEnvironment::getGlobalVariable(const std::string &varName) {
@@ -141,4 +157,23 @@ void PyEnvironment::createGlobalVar(PyConstants::VarTypes vartype, const std::st
 
 PyEnvironment::PyEnvironment() {
     modules.emplace("localFunc", std::unique_ptr<PyModule>(new FunctionModule()));
+}
+
+PyEnvironment::~PyEnvironment() {
+    while (!localFuncStack.empty()) {
+        localFuncStack.pop();
+    }
+    while (!funcReturnStack.empty()) {
+        funcReturnStack.pop();
+    }
+
+    lexxerQueue.clear();
+
+    modules.clear();
+    globalVars.clear();
+}
+
+void PyEnvironment::parseStatement(const std::string &expression) {
+    Driver driver;
+    driver.parse_string(expression);
 }

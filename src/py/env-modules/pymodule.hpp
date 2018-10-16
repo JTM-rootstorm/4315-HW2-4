@@ -11,8 +11,8 @@ class PyModule {
 public:
     PyModule() = default;
 
-    virtual void evaluate(std::string func, std::vector<boost::any> args) = 0;
-    virtual void evaluate(std::string func, PyObject &object) = 0;
+    virtual void evaluate(const std::string &func, std::vector<boost::any> args) = 0;
+    virtual void evaluate(const std::string &func, const std::string &varName, PyObject &object) = 0;
 };
 
 #endif //MYPYTHON_PYENVIRONMENTMODULE_HPP

@@ -58,21 +58,26 @@ set(SOURCES
         src/boolexpr.hpp
         src/expr.hpp
         src/scanner.hpp
-        src/driver.hpp                  src/driver.cpp
+        src/driver.hpp                                      src/driver.cpp
 
-        src/py/pyenvironment.hpp        src/py/pyenvironment.cpp
-        src/py/pyconsole.hpp            src/py/pyconsole.cpp
+        src/py/pyenvironment.hpp                            src/py/pyenvironment.cpp
+        src/py/pyconsole.hpp                                src/py/pyconsole.cpp
         src/py/pyobject.hpp
         src/py/pyconstants.hpp
         src/py/pyerrors.hpp
-        src/py/pyfunction.hpp           src/py/pyfunction.cpp
-        src/py/pyfunctionbuilder.hpp    src/py/pyfunctionbuilder.cpp
-        src/py/pystatement.hpp          src/py/pystatement.cpp
-        src/py/pyifblock.hpp            src/py/pyifblock.cpp
+        src/py/pyfunction.hpp                               src/py/pyfunction.cpp
+        src/py/pyfunctionbuilder.hpp                        src/py/pyfunctionbuilder.cpp
+        src/py/statements/pystatement.hpp                   src/py/statements/pystatement.cpp
+        src/py/statements/pyifblock.hpp                     src/py/statements/pyifblock.cpp
 
         src/py/env-modules/pymodule.hpp
-        src/py/env-modules/mod_functionhelper.hpp src/py/env-modules/mod_functionhelper.cpp)
+        src/py/env-modules/mod_functionhelper.hpp           src/py/env-modules/mod_functionhelper.cpp
+
+        src/py/statements/pyreturn.hpp                      src/py/statements/pyreturn.cpp
+
+        src/py/stdfunction/stdinclude.hpp
+        src/py/stdfunction/stdprint.hpp                     src/py/stdfunction/stdprint.cpp)
 
 add_executable(mypython ${SOURCES})
 target_include_directories(mypython PRIVATE ${Boost_INCLUDE_DIR})
-target_link_libraries(mypython gmp gmpxx mpfr ${Boost_LIBRARIES})
+target_link_libraries(mypython ${Boost_LIBRARIES})

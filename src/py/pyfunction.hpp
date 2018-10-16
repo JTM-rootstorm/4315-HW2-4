@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 #include "pyobject.hpp"
-#include "pystatement.hpp"
+#include "statements/pystatement.hpp"
 
 class PyFunction {
 public:
@@ -15,12 +15,14 @@ public:
 
     std::string getName() const { return funcName; }
 
-    boost::any evaluate();
-private:
+    virtual void evaluate(std::vector<std::string> args);
+protected:
     std::string funcName;
+    std::vector<std::string> funcArgs;
+    std::vector<std::string> funcSigVars;
     std::vector<std::unique_ptr<PyStatement>> funcStatements;
 
-    std::unordered_map<std::string, std::shared_ptr<PyObject>> funcArgs;
+    //std::unordered_map<std::string, std::shared_ptr<PyObject>> funcArgs;
     std::unordered_map<std::string, std::shared_ptr<PyObject>> localVars;
 
     friend class PyFunctionBuilder;

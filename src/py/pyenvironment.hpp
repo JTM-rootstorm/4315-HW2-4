@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <unordered_map>
+#include <queue>
 #include <stack>
 
 #include "../boolexpr.hpp"
@@ -37,12 +38,17 @@ public:
     void setVar(const std::string &varName, PyObject &object);
     std::shared_ptr<PyObject> getVar(const std::string &varName);
 
+    void buildFunction();
+    void runFunction(std::string funcSig);
+    void parseStatement(const std::string &expression);
 
-    std::string runningFunc = "";
+    std::stack<std::string> localFuncStack;
     std::stack<std::shared_ptr<PyObject>> funcReturnStack;
+    std::vector<boost::any> lexxerQueue;
+    bool funcReturn = false;
 protected:
     PyEnvironment();
-    ~PyEnvironment() = default;
+    ~PyEnvironment();
 
 private:
     std::unordered_map<std::string, std::unique_ptr<PyModule>> modules;
