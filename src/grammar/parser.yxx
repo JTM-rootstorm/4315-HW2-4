@@ -59,11 +59,14 @@
 %token <bool>           BOOLEAN      "boolean"
 %token <std::string>    STRING       "string"
 %token <std::string>    VARIABLE     "variable"
-%token <std::string>    PYFUNCTION   "built-in function"
 %token <std::string>    FUNCCALL     "function call"
-%token <std::string>    KEYWORD      "keyword"
 
 %token <std::string>    BOOLEQ       "=="
+%token <std::string>    BOOLNEQ      "!="
+%token <std::string>    BOOLLTEQ     "<="
+%token <std::string>    BOOLGTEQ     ">="
+%token <std::string>    BOOLAND      "and, &&"
+%token <std::string>    BOOLOR       "or, ||"
 
 %type <class BaseExpressionNode*>     constant variable
 %type <class BaseExpressionNode*>     atomexpr powerexpr unaryexpr mulexpr addexpr expr
@@ -171,13 +174,13 @@ logicalcompare : addexpr {
                | addexpr '<' addexpr {
                  $$ = new BoolExprLessThan($1, $3);
                }
-               | addexpr "<=" addexpr {
+               | addexpr BOOLLTEQ addexpr {
                  $$ = new BoolExprLessThan($1, $3, true);
                }
                | addexpr '>' addexpr {
                  $$ = new BoolExprGreaterThan($1, $3);
                }
-               | addexpr ">=" addexpr {
+               | addexpr BOOLGTEQ addexpr {
                  $$ = new BoolExprGreaterThan($1, $3, true);
                }
 
@@ -187,27 +190,21 @@ logicaleq : logicalcompare {
           | logicalcompare BOOLEQ logicalcompare {
             $$ = new BoolExprEq($1, $3);
           }
-          | logicalcompare "!=" logicalcompare {
+          | logicalcompare BOOLNEQ logicalcompare {
             $$ = new BoolExprNotEq($1, $3);
           }
 
 logicaland : logicaleq {
              $$ = $1;
            }
-           | logicaleq "&&" logicaleq {
-             $$ = new BoolExprAnd($1, $3);
-           }
-           | logicaleq "and" logicaleq {
+           | logicaleq BOOLAND logicaleq {
              $$ = new BoolExprAnd($1, $3);
            }
 
 logicalor : logicaland {
             $$ = $1;
           }
-          | logicaland "||" logicaland {
-            $$ = new BoolExprOr($1, $3);
-          }
-          | logicaland "or" logicaland {
+          | logicaland BOOLOR logicaland {
             $$ = new BoolExprOr($1, $3);
           }
 

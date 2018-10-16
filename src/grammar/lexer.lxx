@@ -92,6 +92,31 @@ IFBODY          (("   ".+)((\n)?)+)+
     return token::BOOLEQ;
 }
 
+"!=" {
+    yylval->build<std::string>(yytext);
+    return token::BOOLNEQ;
+}
+
+"&&"|and {
+    yylval->build<std::string>(yytext);
+    return token::BOOLAND;
+}
+
+"||"|or {
+    yylval->build<std::string>(yytext);
+    return token::BOOLOR;
+}
+
+"<=" {
+    yylval->build<std::string>(yytext);
+    return token::BOOLLTEQ;
+}
+
+">=" {
+    yylval->build<std::string>(yytext);
+    return token::BOOLGTEQ;
+}
+
 [0-9]+ {
     yylval->build<int>(atoi(yytext));
     return token::INTEGER;

@@ -8,7 +8,7 @@
 #include "../pyenvironment.hpp"
 
 PyIfBlock::PyIfBlock(std::string expr) : PyStatement() {
-    boost::regex regex {R"((((   )+)?if )|[\w]+[ ]+(==|<|>|<=|>=|and|or)[ ]+[\w]+:\n)"};
+    boost::regex regex {R"((((   )+)?if )|[\w]+[ ]+(==|!=|<|>|<=|>=|and|or)[ ]+[\w]+:\n)"};
 
     std::vector<std::string> results;
 

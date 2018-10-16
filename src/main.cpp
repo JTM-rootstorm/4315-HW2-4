@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
                            "test()";
 
     std::string printStr = "x = 1\n"
-                           "if x == 1:\n"
+                           "if x != 1:\n"
                            "   x = 2\n"
                            "print(\"x = \",x)";
 
