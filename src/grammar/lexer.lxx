@@ -33,10 +33,10 @@
 
 FUNCDEF         def[ ]+[A-Za-z_]+[\w]+\(.*\)\:\n("   ".+\n("   ".+\n)*((\n)?)+)+
 FUNCDECL        def[ ]+
-FUNCSIG         [A-Za-z_]+[A-Za-z0-9_]+\(.*\):\n
+FUNCSIG         [A-Za-z_]+([A-Za-z0-9_]+)?\(.*\):\n
 FUNCBOD         ("   ".+)\n(("   ")("   ")+.+\n)*
 FUNCTAIL        ("   ".+\n("   ".+(\n)?)*((\n)?)+)+
-FUNCCALL        [A-Za-z_]+[A-Za-z0-9_]+\(.*\)
+FUNCCALL        [A-Za-z_]+([A-Za-z0-9_]+)?\(.*\)
 MAINIF          if[ ]+
 IFEXPR          .+\:(\n)
 IFBODY          (("   ".+)((\n)?)+)+

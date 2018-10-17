@@ -22,7 +22,7 @@ PyFunctionBuilder & PyFunctionBuilder::parseFunctionSignature(std::string sig) {
     std::vector<std::string> results;
 
     /* get the function name and wipe it from the sig */
-    regex = R"(^[A-Za-z_]+[\w]+)";
+    regex = R"(^[A-Za-z_]+([\w]+)?)";
 
     if (boost::regex_search(sig, match, regex)) {
         function->funcName = match.str();
