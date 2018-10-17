@@ -39,7 +39,9 @@ FUNCTAIL        ("   ".+\n("   ".+(\n)?)*((\n)?)+)+
 FUNCCALL        [A-Za-z_]+([A-Za-z0-9_]+)?\(.*\)
 MAINIF          if[ ]+
 IFEXPR          .+\:(\n)
+IFELSE          else([ ]+)?\n
 IFBODY          (("   ".+)((\n)?)+)+
+IFEND           (("   ".+)((\n\n))+)+
 
 %%
 %{
@@ -81,10 +83,18 @@ IFBODY          (("   ".+)((\n)?)+)+
     PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
 }
 
-<IFDEFINE>{IFBODY} {
+<IFDEFINE>{IFELSE} {
+    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+}
+
+<IFDEFINE>{IFEND} {
     PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
     PyEnvironment::Instance().constructMainIf();
     BEGIN(INITIAL);
+}
+
+<IFDEFINE>{IFBODY} {
+    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
 }
 
 "==" {

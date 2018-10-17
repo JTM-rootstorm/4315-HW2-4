@@ -169,7 +169,7 @@ void PyEnvironment::constructMainIf() {
         ss << boost::any_cast<std::string>(var);
     }
     lexxerQueue.clear();
-
-    PyIfBlock ifBlock(ss.str());
+    std::string temp = ss.str();
+    PyIfBlock ifBlock(temp);
     ifBlock.evaluate();
 }

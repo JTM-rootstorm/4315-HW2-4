@@ -61,13 +61,15 @@ PyFunctionBuilder & PyFunctionBuilder::parseStatements(std::string funcBody) {
 
         if(boost::regex_search(target, match, ifregex)) {
             std::string ifbod;
-            boost::regex bodreg{R"((   )(   .+))"};
+            boost::regex bodreg{R"((   )else([ ]+)?|(   )(   .+))"};
 
             std::vector<std::string> ifstatements;
+
             ifstatements.push_back(match.str());
 
             while (std::getline(ss, ifbod, '\n')) {
                 if(boost::regex_search(ifbod, match, bodreg)) {
+
                     ifstatements.push_back(match.str());
                 }
                 else {
@@ -78,6 +80,7 @@ PyFunctionBuilder & PyFunctionBuilder::parseStatements(std::string funcBody) {
                     for (const auto &string : ifstatements) {
                         fullstate << string << '\n';
                     }
+
                     std::unique_ptr<PyStatement> statement = std::unique_ptr<PyIfBlock>(new PyIfBlock(fullstate.str()));
                     function->funcStatements.push_back(std::move(statement));
                     break;
