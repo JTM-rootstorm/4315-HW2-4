@@ -39,6 +39,7 @@ public:
     void buildFunction();
     void runFunction(std::string funcSig);
     void parseStatement(const std::string &expression);
+    void parseFile(const std::string &fileName);
 
     void constructMainIf();
 

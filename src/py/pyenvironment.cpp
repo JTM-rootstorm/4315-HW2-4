@@ -158,6 +158,11 @@ void PyEnvironment::parseStatement(const std::string &expression) {
     driver.parse_string(expression);
 }
 
+void PyEnvironment::parseFile(const std::string &fileName) {
+    Driver driver;
+    driver.parse_file(fileName);
+}
+
 void PyEnvironment::constructMainIf() {
     std::stringstream ss;
     for (auto var : lexxerQueue) {

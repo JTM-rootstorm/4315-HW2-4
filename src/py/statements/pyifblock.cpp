@@ -15,6 +15,7 @@ PyIfBlock::PyIfBlock(std::string expr) : PyStatement() {
     for (boost::sregex_iterator i = boost::sregex_iterator(expr.begin(), expr.end(), regex);
          i != boost::sregex_iterator(); ++i) {
         boost::smatch m = *i;
+
         results.push_back(m.str());
     }
 
@@ -32,12 +33,13 @@ PyIfBlock::PyIfBlock(std::string expr) : PyStatement() {
 
     // get rid of the : and newline
     expression.erase(expression.end() - 2, expression.end());
-
+    boost::trim(expr);
     regex = R"(((   .+)((\n)?)+)+)";
     std::stringstream ss;
     for (boost::sregex_iterator i = boost::sregex_iterator(expr.begin(), expr.end(), regex);
          i != boost::sregex_iterator(); ++i) {
         boost::smatch m = *i;
+
         ss << m.str();
     }
 

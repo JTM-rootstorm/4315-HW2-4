@@ -203,5 +203,5 @@ void FunctionModule::runFunction(const std::string &sig) {
 
 void FunctionModule::initStandardFunctions() {
     std::unique_ptr<PyFunction> print = std::unique_ptr<StdPrint>(new StdPrint());
-    pyFunctions.insert({"print", std::move(print)});
+    pyFunctions.emplace("print", std::move(print));
 }
