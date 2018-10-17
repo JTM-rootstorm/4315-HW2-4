@@ -7,7 +7,7 @@ void PyFunction::evaluate(std::vector<std::string> args) {
     for (auto &funcStatement : funcStatements) {
         if (PyEnvironment::Instance().funcReturn) {
             PyEnvironment::Instance().funcReturn = false;
-            return;
+            break;
         }
 
         funcStatement->evaluate();

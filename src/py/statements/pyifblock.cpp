@@ -6,6 +6,7 @@
 
 #include "../pyobject.hpp"
 #include "../pyenvironment.hpp"
+#include "pyreturn.hpp"
 
 PyIfBlock::PyIfBlock(std::string expr) : PyStatement() {
     boost::regex regex {R"((((   )+)?if )|[\w]+([ ]+)?(==|!=|<|>|<=|>=|and|or)([ ]+)?[\w]+:\n)"};
@@ -53,11 +54,27 @@ PyIfBlock::PyIfBlock(std::string expr) : PyStatement() {
             }
 
             if (!elseTrigger) {
-                std::unique_ptr<PyStatement> pyStatement = std::unique_ptr<PyStatement>(new PyStatement(statement));
+                std::unique_ptr<PyStatement> pyStatement;
+
+                if (statement.find("return") != std::string::npos) {
+                    pyStatement = std::unique_ptr<PyReturn>(new PyReturn(statement));
+                }
+                else {
+                    pyStatement = std::unique_ptr<PyStatement>(new PyStatement(statement));
+                }
+
                 trueBlock.push_back(std::move(pyStatement));
             }
             else {
-                std::unique_ptr<PyStatement> pyStatement = std::unique_ptr<PyStatement>(new PyStatement(statement));
+                std::unique_ptr<PyStatement> pyStatement;
+
+                if (statement.find("return") != std::string::npos) {
+                    pyStatement = std::unique_ptr<PyReturn>(new PyReturn(statement));
+                }
+                else {
+                    pyStatement = std::unique_ptr<PyStatement>(new PyStatement(statement));
+                }
+
                 falseBlock.push_back(std::move(pyStatement));
             }
         }

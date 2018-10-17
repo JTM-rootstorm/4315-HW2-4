@@ -57,6 +57,7 @@ set(SOURCES
 
         src/boolexpr.hpp
         src/expr.hpp
+        src/stringexpr.hpp
         src/scanner.hpp
         src/driver.hpp                                      src/driver.cpp
 

@@ -29,6 +29,7 @@ std::shared_ptr<PyObject> PyEnvironment::getVar(const std::string &varName) {
 void PyEnvironment::runFunction(std::string funcSig) {
     std::vector<boost::any> args{boost::any(funcSig)};
     modules.at("localFunc")->evaluate("evalFunc", args);
+    funcReturn = false;
 }
 
 void PyEnvironment::buildFunction() {

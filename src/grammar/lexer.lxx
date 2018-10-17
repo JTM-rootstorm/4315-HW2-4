@@ -43,6 +43,9 @@ IFELSE          else([ ]+)?\n
 IFBODY          (("   ".+)((\n)?)+)+
 IFEND           (("   ".+)((\n\n))+)+
 
+LPARENS         \(
+RPARENS         \)
+
 %%
 %{
     yylval = lval;
@@ -125,6 +128,16 @@ IFEND           (("   ".+)((\n\n))+)+
 ">=" {
     yylval->build<std::string>(yytext);
     return token::BOOLGTEQ;
+}
+
+{LPARENS} {
+    yylval->build<std::string>(yytext);
+    return token::LPARENS;
+}
+
+{RPARENS} {
+    yylval->build<std::string>(yytext);
+    return token::RPARENS;
 }
 
 [0-9]+ {

@@ -68,6 +68,9 @@
 %token <std::string>    BOOLAND      "and, &&"
 %token <std::string>    BOOLOR       "or, ||"
 
+%token <std::string>    LPARENS      "("
+%token <std::string>    RPARENS      ")"
+
 %type <class BaseExpressionNode*>     constant variable
 %type <class BaseExpressionNode*>     atomexpr powerexpr unaryexpr mulexpr addexpr expr
 
@@ -84,6 +87,34 @@ constant : INTEGER {
     $$ = new ExprConstant($1);
 } | BOOLEAN {
     $$ = new BoolExprConstant($1);
+} | STRING {
+    $$ = new BaseStringNode($1);
+} | FUNCCALL {
+
+    PyEnvironment::Instance().runFunction($1);
+
+    if (!PyEnvironment::Instance().funcReturnStack.empty()) {
+        std::shared_ptr<PyObject> pyObject = PyEnvironment::Instance().funcReturnStack.top();
+        PyEnvironment::Instance().funcReturnStack.pop();
+
+        // TODO handle string types maybe, but throw errors if math gets done with them
+        switch ( pyObject->type ) {
+            case PyConstants::VarTypes::NUMBER: {
+                $$ = new ExprConstant(pyObject->getData<int>());
+                break;
+            }
+            case PyConstants::VarTypes::STRING: {
+                $$ = new BaseStringNode(pyObject->getData<std::string>());
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
+    else {
+        $$ = nullptr;
+    }
 }
 
 variable : VARIABLE {
@@ -100,6 +131,11 @@ variable : VARIABLE {
                     bool val = pyObject->getData<bool>();
                     $$ = new BoolExprConstant(val);
                     break;
+            }
+            case PyConstants::VarTypes::STRING: {
+                std::string val = pyObject->getData<std::string>();
+                $$ = new BaseStringNode(val);
+                break;
             }
             case PyConstants::VarTypes::NONE: {
                     PyEnvironment::Instance().pyConsole.logError(PyErrors::NameError, $1.c_str());
@@ -121,7 +157,7 @@ atomexpr : constant {
          | variable {
             $$ = $1;
          }
-         | '(' expr ')' {
+         | LPARENS expr RPARENS {
             $$ = $2;
          }
 
@@ -212,10 +248,6 @@ expr      : logicalor {
             $$ = $1;
           }
 
-function  : FUNCCALL {
-            PyEnvironment::Instance().runFunction($1);
-          }
-
 assignment : VARIABLE '=' expr {
              std::shared_ptr<PyObject> pyObject = $3->evaluate();
 
@@ -231,6 +263,10 @@ assignment : VARIABLE '=' expr {
                     val = boost::any(pyObject->getData<bool>());
                     break;
                 }
+                case PyConstants::VarTypes::STRING: {
+                    val = boost::any(pyObject->getData<std::string>());
+                    break;
+                }
                 default:
                     // TODO: error or something
                     break;
@@ -239,14 +275,6 @@ assignment : VARIABLE '=' expr {
              PyEnvironment::Instance().setVar($1, val, type);
 
              delete $3;
-           }
-           | VARIABLE '=' STRING {
-             PyString pyString(std::string($3));
-
-             PyEnvironment::Instance().setVar($1, boost::any(pyString.getData<std::string>()), pyString.type);
-           }
-           | VARIABLE '=' FUNCCALL {
-
            }
 
 start     : %empty
@@ -259,8 +287,6 @@ start     : %empty
           | start expr EOL {
             PyEnvironment::Instance().exprContext.expressions.push_back($2);
           }
-          | start function EOL
-          | start function END
 
 
 %%

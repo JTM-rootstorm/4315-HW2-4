@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "expr.hpp"
+#include "stringexpr.hpp"
 
 class BoolExprConstant : public BaseExpressionNode {
 public:
@@ -206,7 +206,9 @@ public:
 
     void clearExpressions() {
         for (auto exp : expressions) {
-            delete exp;
+            if (exp != nullptr) {
+                delete exp;
+            }
         }
 
         expressions.clear();

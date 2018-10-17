@@ -52,7 +52,6 @@ protected:
     ~PyEnvironment();
 
 private:
-    std::vector<std::unique_ptr<PyStatement>> globalStatements;
     std::unordered_map<std::string, std::unique_ptr<PyModule>> modules;
 
     std::unordered_map<std::string, std::shared_ptr<PyObject>> globalVars;
