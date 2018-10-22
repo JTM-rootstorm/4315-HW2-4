@@ -49,9 +49,11 @@ PyFunctionBuilder & PyFunctionBuilder::parseFunctionSignature(std::string sig) {
 PyFunctionBuilder & PyFunctionBuilder::parseStatements(std::string funcBody) {
     if (funcBody.empty()) return *this;
 
-    boost::regex regex{R"((   .+)(\n)?(((   )(   )+.+(\n)?)+)?)"};
+    boost::replace_all(funcBody, "\r", "");
+
+    //boost::regex regex{R"((   .+)(\n)?(((   )(   )+.+(\n)?)+)?)"};
     boost::regex ifregex{R"((   )+(if)[ ]+(.+\:))"};
-    boost::regex returnregex{R"((   )+return[ ]+.+(\n)?)"};
+    boost::regex returnregex{R"((   )+return[ ]+.+((\n)+)?)"};
 
     boost::smatch match;
 
@@ -69,7 +71,6 @@ PyFunctionBuilder & PyFunctionBuilder::parseStatements(std::string funcBody) {
 
             while (std::getline(ss, ifbod, '\n')) {
                 if(boost::regex_search(ifbod, match, bodreg)) {
-
                     ifstatements.push_back(match.str());
                 }
                 else {
@@ -87,7 +88,8 @@ PyFunctionBuilder & PyFunctionBuilder::parseStatements(std::string funcBody) {
                 }
             }
         }
-        else if (boost::regex_search(target, match, returnregex)) {
+
+        if (boost::regex_search(target, match, returnregex)) {
             std::string ret = match.str();
             boost::trim(ret);
             std::unique_ptr<PyStatement> statement = std::unique_ptr<PyReturn>(new PyReturn(ret));
@@ -95,6 +97,7 @@ PyFunctionBuilder & PyFunctionBuilder::parseStatements(std::string funcBody) {
             continue;
         }
 
+        if (target.empty()) continue;
 
         boost::trim(target);
         std::unique_ptr<PyStatement> statement = std::unique_ptr<PyStatement>(new PyStatement(target));

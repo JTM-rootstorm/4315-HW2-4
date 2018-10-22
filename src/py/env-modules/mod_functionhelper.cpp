@@ -172,7 +172,7 @@ void FunctionModule::createFunctionVar(const std::string &funcName, PyConstants:
 }
 
 void FunctionModule::runFunction(const std::string &sig) {
-    boost::regex regex{R"(^[A-Za-z_]+([\w]+)?)"};
+    boost::regex regex{R"(^[A-Za-z_]+([\w]+)?([ ]+)?)"};
     boost::smatch match;
     std::vector<std::string> results;
 

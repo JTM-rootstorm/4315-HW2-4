@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "../pyobject.hpp"
 #include "../pyenvironment.hpp"
@@ -10,7 +11,7 @@
 
 PyIfBlock::PyIfBlock(std::string expr) : PyStatement() {
     boost::regex regex {R"((((   )+)?if )|[\w]+([ ]+)?(==|!=|<|>|<=|>=|and|or)([ ]+)?[\w]+:\n)"};
-
+    boost::replace_all(expr, "\r", "");
     std::vector<std::string> results;
 
     for (boost::sregex_iterator i = boost::sregex_iterator(expr.begin(), expr.end(), regex);

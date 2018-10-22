@@ -8,6 +8,7 @@ int main(int argc, char** argv) {
     else {
         std::string input;
         while (true) {
+            std::cout << ">>> ";
             std::cin >> input;
             if (input == "exit()") {
                 break;

@@ -31,17 +31,17 @@
 
 %x DEFFUNC IFDEFINE
 
-FUNCDEF         def[ ]+[A-Za-z_]+[\w]+\(.*\)\:\n("   ".+\n("   ".+\n)*((\n)?)+)+
+FUNCDEF         def[ ]+[A-Za-z_]+[\w]+\(.*\)\:((\r)?\n)("   ".+((\r)?\n)("   ".+((\r)?\n))*((((\r)?\n))?)+)+
 FUNCDECL        def[ ]+
-FUNCSIG         [A-Za-z_]+([A-Za-z0-9_]+)?\(.*\):\n
-FUNCBOD         ("   ".+)\n(("   ")("   ")+.+\n)*
-FUNCTAIL        ("   ".+\n("   ".+(\n)?)*((\n)?)+)+
-FUNCCALL        [A-Za-z_]+([A-Za-z0-9_]+)?\(.*\)
+FUNCSIG         [A-Za-z_]+([A-Za-z0-9_]+)?\(.*\):((\r)?\n)
+FUNCBOD         ("   ".+)((\r)?\n)(("   ")("   ")+.+((\r)?\n))*
+FUNCTAIL        ("   ".+((\r)?\n)("   ".+(((\r)?\n))?)*((((\r)?\n))?)+)+
+FUNCCALL        [A-Za-z_]+([A-Za-z0-9_]+)?([ ]+)?\(.*\)
 MAINIF          if[ ]+
-IFEXPR          .+\:(\n)
-IFELSE          else([ ]+)?\n
-IFBODY          (("   ".+)((\n)?)+)+
-IFEND           (("   ".+)((\n\n))+)+
+IFEXPR          .+\:(((\r)?\n))
+IFELSE          else\:([ ]+)?((\r)?\n)
+IFBODY          (("   ".+)((((\r)?\n))?)+)+
+IFEND           (("   ".+)((((\r)?\n)((\r)?\n))?)+)+
 
 LPARENS         \(
 RPARENS         \)
@@ -52,7 +52,7 @@ RPARENS         \)
     yylloc->step();
 %}
 
-"# "[^\n]*  /* consume comments */
+"# "(.+)?((\r)?\n)  /* consume comments */
 
 {FUNCDECL} {
     BEGIN(DEFFUNC);
@@ -168,7 +168,7 @@ RPARENS         \)
     yylloc->step();
 }
 
-\n {
+((\r)?\n) {
     yylloc->lines(yyleng);
     return token::EOL;
 }
