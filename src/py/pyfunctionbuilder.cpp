@@ -82,8 +82,8 @@ PyFunctionBuilder & PyFunctionBuilder::parseStatements(std::string funcBody) {
                         fullstate << string << '\n';
                     }
 
-                    std::unique_ptr<PyStatement> statement = std::unique_ptr<PyIfBlock>(new PyIfBlock(fullstate.str()));
-                    function->funcStatements.push_back(std::move(statement));
+                    std::shared_ptr<PyStatement> statement = std::make_shared<PyIfBlock>(fullstate.str());
+                    function->funcStatements.push_back(statement);
                     break;
                 }
             }
@@ -92,16 +92,16 @@ PyFunctionBuilder & PyFunctionBuilder::parseStatements(std::string funcBody) {
         if (boost::regex_search(target, match, returnregex)) {
             std::string ret = match.str();
             boost::trim(ret);
-            std::unique_ptr<PyStatement> statement = std::unique_ptr<PyReturn>(new PyReturn(ret));
-            function->funcStatements.push_back(std::move(statement));
+            std::shared_ptr<PyStatement> statement = std::make_shared<PyReturn>(ret);
+            function->funcStatements.push_back(statement);
             continue;
         }
 
         if (target.empty()) continue;
 
         boost::trim(target);
-        std::unique_ptr<PyStatement> statement = std::unique_ptr<PyStatement>(new PyStatement(target));
-        function->funcStatements.push_back(std::move(statement));
+        std::shared_ptr<PyStatement> statement = std::make_shared<PyStatement>(target);
+        function->funcStatements.push_back(statement);
     }
 
     return *this;

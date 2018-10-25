@@ -5,7 +5,7 @@
 #include "statements/pyifblock.hpp"
 
 void PyEnvironment::setVar(const std::string &varName, boost::any value, PyConstants::VarTypes vartype) {
-    if (localFuncStack.empty()) {
+    if (funcStack.empty()) {
         setGlobalVar(varName, std::move(value), vartype);
         return;
     }
@@ -15,7 +15,7 @@ void PyEnvironment::setVar(const std::string &varName, boost::any value, PyConst
 }
 
 std::shared_ptr<PyObject> PyEnvironment::getVar(const std::string &varName) {
-    if (localFuncStack.empty()) return getGlobalVariable(varName);
+    if (funcStack.empty() || (funcStack.top()->isStdFunc && funcStack.size() == 1)) return getGlobalVariable(varName);
 
     std::vector<boost::any> args{boost::any(varName)};
     modules.at("localFunc")->evaluate("getVar", args);
@@ -141,8 +141,8 @@ PyEnvironment::PyEnvironment() {
 }
 
 PyEnvironment::~PyEnvironment() {
-    while (!localFuncStack.empty()) {
-        localFuncStack.pop();
+    while (!funcStack.empty()) {
+        funcStack.pop();
     }
     while (!funcReturnStack.empty()) {
         funcReturnStack.pop();
@@ -173,4 +173,17 @@ void PyEnvironment::constructMainIf() {
     std::string temp = ss.str();
     PyIfBlock ifBlock(temp);
     ifBlock.evaluate();
+}
+
+void PyEnvironment::pushOntoFunctionStack(std::shared_ptr<PyFunction> function) {
+    std::shared_ptr<PyFunction> funcCopy = std::make_shared<PyFunction>(*function);
+    funcStack.push(funcCopy);
+}
+
+std::shared_ptr<PyFunction> PyEnvironment::getFunctionStackTop() {
+    return funcStack.top();
+}
+
+void PyEnvironment::popFunctionStack() {
+    funcStack.pop();
 }

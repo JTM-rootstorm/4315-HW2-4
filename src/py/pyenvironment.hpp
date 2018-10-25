@@ -43,7 +43,10 @@ public:
 
     void constructMainIf();
 
-    std::stack<std::string> localFuncStack;
+    void pushOntoFunctionStack(std::shared_ptr<PyFunction> function);
+    std::shared_ptr<PyFunction> getFunctionStackTop();
+    void popFunctionStack();
+
     std::stack<std::shared_ptr<PyObject>> funcReturnStack;
     std::vector<boost::any> lexxerQueue;
     bool funcReturn = false;
@@ -55,6 +58,8 @@ private:
     std::unordered_map<std::string, std::unique_ptr<PyModule>> modules;
 
     std::unordered_map<std::string, std::shared_ptr<PyObject>> globalVars;
+
+    std::stack<std::shared_ptr<PyFunction>> funcStack;
 
     std::shared_ptr<PyObject> getGlobalVariable(const std::string &varName);
 

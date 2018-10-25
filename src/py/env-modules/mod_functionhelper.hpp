@@ -6,6 +6,8 @@
 #include "../pyconstants.hpp"
 #include "../pyfunctionbuilder.hpp"
 #include "pymodule.hpp"
+#include "../pyfunction.hpp"
+
 
 class PyFunction;
 
@@ -16,7 +18,7 @@ public:
     }
     ~FunctionModule() = default;
 
-    void evaluate(const std::string &func, std::vector<boost::any> args) override;
+    void evaluate(const std::string &task, std::vector<boost::any> args) override;
     void evaluate(const std::string &func, const std::string &varName, PyObject &object) override;
 
 private:
@@ -28,15 +30,18 @@ private:
 
     void generateFunction(std::vector<boost::any> funcStrings);
     void getFunctionVar(const std::string &funcName, const std::string &varName);
-    void setFunctionVar(const std::string &funcName, std::vector<boost::any> args);
-    void setFunctionVar(const std::string &funcName, const std::string &varName, PyObject &object);
+    void setFunctionVar(std::shared_ptr<PyFunction> function, std::vector<boost::any> args);
+    void setFunctionVar(std::shared_ptr<PyFunction> function, const std::string &varName, PyObject &object);
 
-    void mutateFunctionVar(const std::string &funcName, PyConstants::VarTypes vartype, const std::string &varName,
-                               boost::any value);
-    void modifyFunctionVar(const std::string &funcName, PyConstants::VarTypes vartype, const std::string &varName,
-                               boost::any value);
-    void createFunctionVar(const std::string &funcName, PyConstants::VarTypes vartype, const std::string &varName,
-                               boost::any value);
+    void mutateFunctionVar(std::shared_ptr<PyFunction> function, PyConstants::VarTypes vartype,
+                           const std::string &varName,
+                           boost::any value);
+    void modifyFunctionVar(std::shared_ptr<PyFunction> function, PyConstants::VarTypes vartype,
+                           const std::string &varName,
+                           boost::any value);
+    void createFunctionVar(std::shared_ptr<PyFunction> function, PyConstants::VarTypes vartype,
+                           const std::string &varName,
+                           boost::any value);
 
     void runFunction(const std::string &sig);
 

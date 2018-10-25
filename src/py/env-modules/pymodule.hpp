@@ -11,7 +11,7 @@ class PyModule {
 public:
     PyModule() = default;
 
-    virtual void evaluate(const std::string &func, std::vector<boost::any> args) = 0;
+    virtual void evaluate(const std::string &task, std::vector<boost::any> args) = 0;
     virtual void evaluate(const std::string &func, const std::string &varName, PyObject &object) = 0;
 };
 

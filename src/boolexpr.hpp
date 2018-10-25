@@ -206,9 +206,7 @@ public:
 
     void clearExpressions() {
         for (auto exp : expressions) {
-            if (exp != nullptr) {
-                delete exp;
-            }
+            delete exp;
         }
 
         expressions.clear();

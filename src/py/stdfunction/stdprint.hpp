@@ -5,7 +5,13 @@
 
 class StdPrint : public PyFunction {
 public:
-    StdPrint() { funcName = "print"; }
+    StdPrint() : PyFunction() {
+        funcName = "print";
+        isStdFunc = true;
+        eval = [=](std::vector<std::string> args){ StdPrint::evaluate(args); };
+    }
+
+protected:
     void evaluate(std::vector<std::string> args) override;
 };
 

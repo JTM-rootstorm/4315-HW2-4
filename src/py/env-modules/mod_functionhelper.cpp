@@ -6,24 +6,24 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/regex.hpp>
 
-void FunctionModule::evaluate(const std::string &func, std::vector<boost::any> args) {
-    if (func == "gen") {
+void FunctionModule::evaluate(const std::string &task, std::vector<boost::any> args) {
+    if (task == "gen") {
         generateFunction(args);
         return;
     }
-    else if (func == "setVar") {
-        std::string funcName = PyEnvironment::Instance().localFuncStack.top();
-        setFunctionVar(funcName, args);
+    else if (task == "setVar") {
+        auto function = PyEnvironment::Instance().getFunctionStackTop();
+        setFunctionVar(function, args);
         return;
     }
-    else if (func == "getVar") {
-        std::string funcName = PyEnvironment::Instance().localFuncStack.top();
+    else if (task == "getVar") {
+        std::string funcName = PyEnvironment::Instance().getFunctionStackTop()->getName();
         std::string varName = boost::any_cast<std::string>(args[0]);
 
         getFunctionVar(funcName, varName);
         return;
     }
-    else if (func == "evalFunc") {
+    else if (task == "evalFunc") {
         std::string sig = boost::any_cast<std::string>(args[0]);
         boost::trim(sig);
 
@@ -34,18 +34,18 @@ void FunctionModule::evaluate(const std::string &func, std::vector<boost::any> a
 
 void FunctionModule::evaluate(const std::string &func, const std::string &varName, PyObject &object) {
     if (func == "setVar") {
-        std::string funcName = PyEnvironment::Instance().localFuncStack.top();
-        setFunctionVar(funcName, varName, object);
+        auto function = PyEnvironment::Instance().getFunctionStackTop();
+        setFunctionVar(function, varName, object);
         return;
     }
 }
 
 bool FunctionModule::varNameUsed(std::string varName) {
-    std::string currentFunc = PyEnvironment::Instance().localFuncStack.top();
+    auto currentFunc = PyEnvironment::Instance().getFunctionStackTop();
 
-    auto iter = pyFunctions.at(currentFunc)->localVars.find(varName);
+    auto iter = currentFunc->localVars.find(varName);
 
-    return !(iter == pyFunctions.at(currentFunc)->localVars.end());
+    return !(iter == currentFunc->localVars.end());
 }
 
 void FunctionModule::generateFunction(std::vector<boost::any> funcStrings) {
@@ -63,11 +63,11 @@ void FunctionModule::getFunctionVar(const std::string &funcName, const std::stri
         return;
     }
 
-    std::shared_ptr<PyObject> pyObject = pyFunctions.at(funcName)->localVars.at(varName);
+    std::shared_ptr<PyObject> pyObject = PyEnvironment::Instance().getFunctionStackTop()->localVars.at(varName);
     PyEnvironment::Instance().funcReturnStack.push(pyObject);
 }
 
-void FunctionModule::setFunctionVar(const std::string &funcName, std::vector<boost::any> args) {
+void FunctionModule::setFunctionVar(std::shared_ptr<PyFunction> function, std::vector<boost::any> args) {
     auto vartype = boost::any_cast<PyConstants::VarTypes>(args[0]);
     const std::string varName = boost::any_cast<std::string>(args[1]);
     boost::any value = args[2];
@@ -75,43 +75,43 @@ void FunctionModule::setFunctionVar(const std::string &funcName, std::vector<boo
     bool nameUsed = varNameUsed(varName);
 
     if (nameUsed && vartype != PyConstants::VarTypes::NONE) {
-        if (pyFunctions.at(funcName)->localVars.at(varName)->type == vartype) {
-            modifyFunctionVar(funcName, vartype, varName, value);
+        if (function->localVars.at(varName)->type == vartype) {
+            modifyFunctionVar(function, vartype, varName, value);
         } else {
-            mutateFunctionVar(funcName, vartype, varName, value);
+            mutateFunctionVar(function, vartype, varName, value);
         }
     } else if (!nameUsed && vartype != PyConstants::VarTypes::NONE) {
-        createFunctionVar(funcName, vartype, varName, value);
+        createFunctionVar(function, vartype, varName, value);
     }
 }
 
-void FunctionModule::setFunctionVar(const std::string &funcName, const std::string &varName, PyObject &object) {
+void FunctionModule::setFunctionVar(std::shared_ptr<PyFunction> function, const std::string &varName, PyObject &object) {
     bool nameUsed = varNameUsed(varName);
 
     if (nameUsed && object.type != PyConstants::VarTypes::NONE) {
-        if (pyFunctions.at(funcName)->localVars.at(varName)->type == object.type) {
-            modifyFunctionVar(funcName, object.type, varName, object.getData<boost::any>());
+        if (function->localVars.at(varName)->type == object.type) {
+            modifyFunctionVar(function, object.type, varName, object.getData<boost::any>());
         } else {
-            mutateFunctionVar(funcName, object.type, varName, object.getData<boost::any>());
+            mutateFunctionVar(function, object.type, varName, object.getData<boost::any>());
         }
     } else if (!nameUsed && object.type != PyConstants::VarTypes::NONE) {
-        createFunctionVar(funcName, object.type, varName, object.getData<boost::any>());
+        createFunctionVar(function, object.type, varName, object.getData<boost::any>());
     }
 }
 
-void FunctionModule::mutateFunctionVar(const std::string &funcName, PyConstants::VarTypes vartype,
+void FunctionModule::mutateFunctionVar(std::shared_ptr<PyFunction> function, PyConstants::VarTypes vartype,
                                        const std::string &varName, boost::any value) {
     switch ( vartype ) {
         case PyConstants::VarTypes::NUMBER: {
-            pyFunctions.at(funcName)->localVars.at(varName) = std::make_shared<PyInt>(boost::any_cast<int>(value));
+            function->localVars.at(varName) = std::make_shared<PyInt>(boost::any_cast<int>(value));
             break;
         }
         case PyConstants::VarTypes::BOOL: {
-            pyFunctions.at(funcName)->localVars.at(varName) = std::make_shared<PyBool>(boost::any_cast<bool>(value));
+            function->localVars.at(varName) = std::make_shared<PyBool>(boost::any_cast<bool>(value));
             break;
         }
         case PyConstants::VarTypes::STRING: {
-            pyFunctions.at(funcName)->localVars.at(varName) = std::make_shared<PyString>(boost::any_cast<std::string>(value));
+            function->localVars.at(varName) = std::make_shared<PyString>(boost::any_cast<std::string>(value));
             break;
         }
         default:
@@ -119,19 +119,19 @@ void FunctionModule::mutateFunctionVar(const std::string &funcName, PyConstants:
     }
 }
 
-void FunctionModule::modifyFunctionVar(const std::string &funcName, PyConstants::VarTypes vartype,
+void FunctionModule::modifyFunctionVar(std::shared_ptr<PyFunction> function, PyConstants::VarTypes vartype,
                                        const std::string &varName, boost::any value) {
     switch ( vartype ) {
         case PyConstants::VarTypes::NUMBER: {
-            pyFunctions.at(funcName)->localVars.at(varName)->setData<int>(boost::any_cast<int>(value));
+            function->localVars.at(varName)->setData<int>(boost::any_cast<int>(value));
             break;
         }
         case PyConstants::VarTypes::BOOL: {
-            pyFunctions.at(funcName)->localVars.at(varName)->setData<bool>(boost::any_cast<bool>(value));
+            function->localVars.at(varName)->setData<bool>(boost::any_cast<bool>(value));
             break;
         }
         case PyConstants::VarTypes::STRING: {
-            pyFunctions.at(funcName)->localVars.at(varName)->setData<std::string>(boost::any_cast<std::string>(value));
+            function->localVars.at(varName)->setData<std::string>(boost::any_cast<std::string>(value));
             break;
         }
         default:
@@ -139,11 +139,11 @@ void FunctionModule::modifyFunctionVar(const std::string &funcName, PyConstants:
     }
 }
 
-void FunctionModule::createFunctionVar(const std::string &funcName, PyConstants::VarTypes vartype,
+void FunctionModule::createFunctionVar(std::shared_ptr<PyFunction> function, PyConstants::VarTypes vartype,
                                        const std::string &varName, boost::any value) {
     switch ( vartype ) {
         case PyConstants::VarTypes::NUMBER: {
-            pyFunctions.at(funcName)->localVars.insert(
+            function->localVars.insert(
                     std::make_pair(
                             varName,
                             std::make_shared<PyInt>(boost::any_cast<int>(value))
@@ -151,7 +151,7 @@ void FunctionModule::createFunctionVar(const std::string &funcName, PyConstants:
             break;
         }
         case PyConstants::VarTypes::BOOL: {
-            pyFunctions.at(funcName)->localVars.insert(
+            function->localVars.insert(
                     std::make_pair(
                             varName,
                             std::make_shared<PyBool>(boost::any_cast<bool>(value))
@@ -159,7 +159,7 @@ void FunctionModule::createFunctionVar(const std::string &funcName, PyConstants:
             break;
         }
         case PyConstants::VarTypes::STRING: {
-            pyFunctions.at(funcName)->localVars.insert(
+            function->localVars.insert(
                     std::make_pair(
                             varName,
                             std::make_shared<PyString>(boost::any_cast<std::string>(value))
@@ -198,10 +198,13 @@ void FunctionModule::runFunction(const std::string &sig) {
         results.push_back(m.str());
     }
 
-    pyFunctions.at(funcName)->evaluate(results);
+    auto function = pyFunctions.at(funcName);
+    PyEnvironment::Instance().pushOntoFunctionStack(function);
+    PyEnvironment::Instance().getFunctionStackTop()->eval(results);
+    PyEnvironment::Instance().popFunctionStack();
 }
 
 void FunctionModule::initStandardFunctions() {
     std::shared_ptr<PyFunction> print = std::make_shared<StdPrint>();
-    pyFunctions.emplace("print", print);
+    pyFunctions.insert({"print", print});
 }

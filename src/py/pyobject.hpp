@@ -34,7 +34,7 @@ protected:
 
 class PyInt : public PyObject {
 public:
-    explicit PyInt (int _data) : PyObject(PyConstants::VarTypes::NUMBER), data(std::move(_data)) {}
+    explicit PyInt (int _data) : PyObject(PyConstants::VarTypes::NUMBER), data(_data) {}
 
 protected:
     void setDataImpl(boost::any const &value) override {

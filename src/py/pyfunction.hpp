@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include <unordered_map>
+#include <functional>
 
 #include "pyobject.hpp"
 #include "statements/pystatement.hpp"
@@ -13,17 +14,23 @@ class PyFunction {
 public:
     PyFunction() = default;
 
+    PyFunction(const PyFunction& other);
+
     std::string getName() const { return funcName; }
 
-    virtual void evaluate(std::vector<std::string> args);
+    std::function<void(std::vector<std::string>)> eval = [=](std::vector<std::string> args){ PyFunction::evaluate(args); };
+
+    bool isStdFunc = false;
 protected:
     std::string funcName;
     std::vector<std::string> funcArgs;
     std::vector<std::string> funcSigVars;
-    std::vector<std::unique_ptr<PyStatement>> funcStatements;
+    std::vector<std::shared_ptr<PyStatement>> funcStatements;
 
     //std::unordered_map<std::string, std::shared_ptr<PyObject>> funcArgs;
     std::unordered_map<std::string, std::shared_ptr<PyObject>> localVars;
+
+    virtual void evaluate(std::vector<std::string> args);
 
     friend class PyFunctionBuilder;
     friend class FunctionModule;
