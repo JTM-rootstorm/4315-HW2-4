@@ -1,11 +1,5 @@
 #include "py/pyenvironment.hpp"
 
-class foo {
-public:
-    explicit foo(int x) : test(x) {}
-    int test;
-};
-
 int main(int argc, char** argv) {
 
     if (argc == 2) {
