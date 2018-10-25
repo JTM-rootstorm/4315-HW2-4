@@ -11,7 +11,7 @@
 #include <iostream>
 
 PyFunctionBuilder & PyFunctionBuilder::init() {
-    function = std::unique_ptr<PyFunction>(new PyFunction());
+    function = std::make_shared<PyFunction>();
 
     return *this;
 }
@@ -107,6 +107,6 @@ PyFunctionBuilder & PyFunctionBuilder::parseStatements(std::string funcBody) {
     return *this;
 }
 
-std::unique_ptr<PyFunction> PyFunctionBuilder::build() {
-    return std::move(function);
+std::shared_ptr<PyFunction> PyFunctionBuilder::build() {
+    return function;
 }

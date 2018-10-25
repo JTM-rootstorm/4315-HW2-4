@@ -49,12 +49,12 @@ bool FunctionModule::varNameUsed(std::string varName) {
 }
 
 void FunctionModule::generateFunction(std::vector<boost::any> funcStrings) {
-    std::unique_ptr<PyFunction> function = pyFunctionBuilder.init()
+    std::shared_ptr<PyFunction> function = pyFunctionBuilder.init()
             .parseFunctionSignature(boost::any_cast<std::string>(funcStrings[0]))
             .parseStatements(boost::any_cast<std::string>(funcStrings[1]))
             .build();
 
-    pyFunctions.emplace(function->getName(), std::move(function));
+    pyFunctions.emplace(function->getName(), function);
 }
 
 void FunctionModule::getFunctionVar(const std::string &funcName, const std::string &varName) {
@@ -202,6 +202,6 @@ void FunctionModule::runFunction(const std::string &sig) {
 }
 
 void FunctionModule::initStandardFunctions() {
-    std::unique_ptr<PyFunction> print = std::unique_ptr<StdPrint>(new StdPrint());
-    pyFunctions.emplace("print", std::move(print));
+    std::shared_ptr<PyFunction> print = std::make_shared<StdPrint>();
+    pyFunctions.emplace("print", print);
 }

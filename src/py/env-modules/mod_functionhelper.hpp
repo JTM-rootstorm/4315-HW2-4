@@ -20,7 +20,7 @@ public:
     void evaluate(const std::string &func, const std::string &varName, PyObject &object) override;
 
 private:
-    std::unordered_map<std::string, std::unique_ptr<PyFunction>> pyFunctions;
+    std::unordered_map<std::string, std::shared_ptr<PyFunction>> pyFunctions;
 
     PyFunctionBuilder pyFunctionBuilder;
 

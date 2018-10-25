@@ -13,10 +13,10 @@ public:
     PyFunctionBuilder & init();
     PyFunctionBuilder & parseFunctionSignature(std::string sig);
     PyFunctionBuilder & parseStatements(std::string funcBody);
-    std::unique_ptr<PyFunction> build();
+    std::shared_ptr<PyFunction> build();
 
 private:
-    std::unique_ptr<PyFunction> function = nullptr;
+    std::shared_ptr<PyFunction> function = nullptr;
 };
 
 #endif //MYPYTHON_PYFUNCTIONBUILDER_HPP
