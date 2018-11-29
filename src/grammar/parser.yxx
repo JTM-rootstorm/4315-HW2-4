@@ -107,6 +107,10 @@ constant : INTEGER {
                 $$ = new BaseStringNode(pyObject->getData<std::string>());
                 break;
             }
+            case PyConstants::VarTypes::BOOL: {
+                $$ = new BoolExprConstant(pyObject->getData<bool>());
+                break;
+            }
             default: {
                 break;
             }

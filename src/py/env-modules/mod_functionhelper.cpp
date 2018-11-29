@@ -75,6 +75,8 @@ void FunctionModule::setFunctionVar(std::shared_ptr<PyFunction> function, std::v
     bool nameUsed = varNameUsed(varName);
 
     if (nameUsed && vartype != PyConstants::VarTypes::NONE) {
+        PyEnvironment::Instance().mutatedVars.push_back(varName);
+
         if (function->localVars.at(varName)->type == vartype) {
             modifyFunctionVar(function, vartype, varName, value);
         } else {
@@ -89,6 +91,8 @@ void FunctionModule::setFunctionVar(std::shared_ptr<PyFunction> function, const 
     bool nameUsed = varNameUsed(varName);
 
     if (nameUsed && object.type != PyConstants::VarTypes::NONE) {
+        PyEnvironment::Instance().mutatedVars.push_back(varName);
+
         if (function->localVars.at(varName)->type == object.type) {
             modifyFunctionVar(function, object.type, varName, object.getData<boost::any>());
         } else {

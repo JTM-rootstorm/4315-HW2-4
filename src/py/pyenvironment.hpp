@@ -49,6 +49,8 @@ public:
 
     std::stack<std::shared_ptr<PyObject>> funcReturnStack;
     std::vector<boost::any> lexxerQueue;
+    std::vector<int> nestedIfCount;
+    std::vector<std::string> mutatedVars;
     bool funcReturn = false;
 protected:
     PyEnvironment();

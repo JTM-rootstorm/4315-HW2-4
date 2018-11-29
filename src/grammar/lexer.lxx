@@ -79,25 +79,35 @@ RPARENS         \)
 }
 
 {MAINIF} {
+    PyEnvironment::Instance().nestedIfCount.push_back(0);
     BEGIN(IFDEFINE);
 }
 
+<IFDEFINE>{MAINIF} {
+    PyEnvironment::Instance().nestedIfCount.back()++;
+}
+
 <IFDEFINE>{IFEXPR} {
-    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+    // PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
 }
 
 <IFDEFINE>{IFELSE} {
-    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+    // PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
 }
 
 <IFDEFINE>{IFEND} {
-    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
-    PyEnvironment::Instance().constructMainIf();
+    // PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+    // PyEnvironment::Instance().constructMainIf();
     BEGIN(INITIAL);
 }
 
 <IFDEFINE>{IFBODY} {
     PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+}
+
+{IFELSE}{IFBODY} {
+    // PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+    std::cout << "Error! else without if" << std::endl;
 }
 
 "==" {

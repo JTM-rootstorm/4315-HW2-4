@@ -61,5 +61,6 @@ void StdPrint::evaluate(std::vector<std::string> args) {
     }
 
     std::string finalstr = ss.str();
-    PyEnvironment::Instance().pyConsole.printToConsole(finalstr);
+    // stub out
+    // PyEnvironment::Instance().pyConsole.printToConsole(finalstr);
 }

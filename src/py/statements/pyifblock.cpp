@@ -60,6 +60,9 @@ PyIfBlock::PyIfBlock(std::string expr) : PyStatement() {
                 if (statement.find("return") != std::string::npos) {
                     pyStatement = std::unique_ptr<PyReturn>(new PyReturn(statement));
                 }
+                else if (statement.find("if") != std::string::npos) {
+                    // pyStatement = std::unique_ptr<PyIfBlock>(new PyIfBlock(statement));
+                }
                 else {
                     pyStatement = std::unique_ptr<PyStatement>(new PyStatement(statement));
                 }

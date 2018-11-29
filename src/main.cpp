@@ -4,6 +4,22 @@ int main(int argc, char** argv) {
 
     if (argc == 2) {
         PyEnvironment::Instance().parseFile(argv[1]);
+
+        std::cout << "Mutated Variable: ";
+
+        for (auto& string : PyEnvironment::Instance().mutatedVars) {
+            std::cout << string + ", ";
+        }
+
+        std::cout << std::endl;
+
+        std::cout << "Nested if/else level: ";
+
+        for (auto level : PyEnvironment::Instance().nestedIfCount) {
+            std::cout << level << " level, ";
+        }
+
+        std::cout << std::endl;
     }
     else {
         std::string input;

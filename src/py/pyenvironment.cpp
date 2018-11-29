@@ -56,6 +56,8 @@ void PyEnvironment::setGlobalVar(const std::string &varName, boost::any value,
     bool nameUsed = varNameUsed(varName);
 
     if (nameUsed && vartype != PyConstants::VarTypes::NONE) {
+        mutatedVars.push_back(varName);
+
         if (globalVars.at(varName)->type == vartype) {
             modifyGlobalVar(vartype, varName, value);
         } else {

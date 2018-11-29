@@ -68,13 +68,13 @@ set(SOURCES
         src/py/pyerrors.hpp
         src/py/pyfunction.hpp                               src/py/pyfunction.cpp
         src/py/pyfunctionbuilder.hpp                        src/py/pyfunctionbuilder.cpp
+
         src/py/statements/pystatement.hpp                   src/py/statements/pystatement.cpp
         src/py/statements/pyifblock.hpp                     src/py/statements/pyifblock.cpp
+        src/py/statements/pyreturn.hpp                      src/py/statements/pyreturn.cpp
 
         src/py/env-modules/pymodule.hpp
         src/py/env-modules/mod_functionhelper.hpp           src/py/env-modules/mod_functionhelper.cpp
-
-        src/py/statements/pyreturn.hpp                      src/py/statements/pyreturn.cpp
 
         src/py/stdfunction/stdinclude.hpp
         src/py/stdfunction/stdprint.hpp                     src/py/stdfunction/stdprint.cpp)

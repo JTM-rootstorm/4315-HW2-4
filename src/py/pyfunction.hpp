@@ -1,3 +1,5 @@
+#include <utility>
+
 #ifndef MYPYTHON_PYFUNCTION_HPP
 #define MYPYTHON_PYFUNCTION_HPP
 
@@ -18,7 +20,9 @@ public:
 
     std::string getName() const { return funcName; }
 
-    std::function<void(std::vector<std::string>)> eval = [=](std::vector<std::string> args){ PyFunction::evaluate(args); };
+    std::function<void(std::vector<std::string>)> eval = [=](std::vector<std::string> args){
+        PyFunction::evaluate(std::move(args));
+    };
 
     bool isStdFunc = false;
 protected:
@@ -29,6 +33,8 @@ protected:
 
     //std::unordered_map<std::string, std::shared_ptr<PyObject>> funcArgs;
     std::unordered_map<std::string, std::shared_ptr<PyObject>> localVars;
+
+    bool parseSigToVars(std::vector<std::string> args);
 
     virtual void evaluate(std::vector<std::string> args);
 
