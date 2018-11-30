@@ -27,14 +27,13 @@ public:
     bool isStdFunc = false;
 protected:
     std::string funcName;
-    std::vector<std::string> funcArgs;
     std::vector<std::string> funcSigVars;
     std::vector<std::shared_ptr<PyStatement>> funcStatements;
 
-    //std::unordered_map<std::string, std::shared_ptr<PyObject>> funcArgs;
     std::unordered_map<std::string, std::shared_ptr<PyObject>> localVars;
 
     bool parseSigToVars(std::vector<std::string> args);
+    bool checkRecursionEnds() const;
 
     virtual void evaluate(std::vector<std::string> args);
 

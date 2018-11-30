@@ -202,6 +202,8 @@ void FunctionModule::runFunction(const std::string &sig) {
         results.push_back(m.str());
     }
 
+    PyEnvironment::Instance().isRecursive = PyEnvironment::Instance().getFunctionStackTop()->funcName == funcName;
+
     auto function = pyFunctions.at(funcName);
     PyEnvironment::Instance().pushOntoFunctionStack(function);
     PyEnvironment::Instance().getFunctionStackTop()->eval(results);

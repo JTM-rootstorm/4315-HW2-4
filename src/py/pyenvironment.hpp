@@ -46,12 +46,16 @@ public:
     void pushOntoFunctionStack(std::shared_ptr<PyFunction> function);
     std::shared_ptr<PyFunction> getFunctionStackTop();
     void popFunctionStack();
+    void flushFunctionStack();
 
     std::stack<std::shared_ptr<PyObject>> funcReturnStack;
     std::vector<boost::any> lexxerQueue;
     std::vector<int> nestedIfCount;
     std::vector<std::string> mutatedVars;
+    std::vector<bool> recursiveFunctionsEnd;
     bool funcReturn = false;
+    bool isRecursive = false;
+
 protected:
     PyEnvironment();
     ~PyEnvironment();

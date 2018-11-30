@@ -55,28 +55,28 @@ PyIfBlock::PyIfBlock(std::string expr) : PyStatement() {
             }
 
             if (!elseTrigger) {
-                std::unique_ptr<PyStatement> pyStatement;
+                std::shared_ptr<PyStatement> pyStatement;
 
                 if (statement.find("return") != std::string::npos) {
-                    pyStatement = std::unique_ptr<PyReturn>(new PyReturn(statement));
+                    pyStatement = std::make_shared<PyReturn>(statement);
                 }
                 else if (statement.find("if") != std::string::npos) {
                     // pyStatement = std::unique_ptr<PyIfBlock>(new PyIfBlock(statement));
                 }
                 else {
-                    pyStatement = std::unique_ptr<PyStatement>(new PyStatement(statement));
+                    pyStatement = std::make_shared<PyStatement>(statement);
                 }
 
                 trueBlock.push_back(std::move(pyStatement));
             }
             else {
-                std::unique_ptr<PyStatement> pyStatement;
+                std::shared_ptr<PyStatement> pyStatement;
 
                 if (statement.find("return") != std::string::npos) {
-                    pyStatement = std::unique_ptr<PyReturn>(new PyReturn(statement));
+                    pyStatement = std::make_shared<PyReturn>(statement);
                 }
                 else {
-                    pyStatement = std::unique_ptr<PyStatement>(new PyStatement(statement));
+                    pyStatement = std::make_shared<PyStatement>(statement);
                 }
 
                 falseBlock.push_back(std::move(pyStatement));

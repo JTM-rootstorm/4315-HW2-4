@@ -13,8 +13,10 @@ public:
     void evaluate() override;
 
 private:
-    std::vector<std::unique_ptr<PyStatement>> trueBlock;
-    std::vector<std::unique_ptr<PyStatement>> falseBlock;
+    std::vector<std::shared_ptr<PyStatement>> trueBlock;
+    std::vector<std::shared_ptr<PyStatement>> falseBlock;
+
+    friend class PyFunction;
 };
 
 #endif //MYPYTHON_PYIFSTATEMENT_HPP

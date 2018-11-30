@@ -189,3 +189,9 @@ std::shared_ptr<PyFunction> PyEnvironment::getFunctionStackTop() {
 void PyEnvironment::popFunctionStack() {
     funcStack.pop();
 }
+
+void PyEnvironment::flushFunctionStack() {
+    while (!funcStack.empty()) {
+        popFunctionStack();
+    }
+}

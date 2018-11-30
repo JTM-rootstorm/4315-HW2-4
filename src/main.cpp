@@ -20,6 +20,19 @@ int main(int argc, char** argv) {
         }
 
         std::cout << std::endl;
+
+        std::cout << "Recursive function ends: ";
+
+        for (auto recEnd : PyEnvironment::Instance().recursiveFunctionsEnd) {
+            if (recEnd) {
+                std::cout << "Yes, ";
+            }
+            else {
+                std::cout << "No, ";
+            }
+        }
+
+        std::cout << std::endl;
     }
     else {
         std::string input;

@@ -23,7 +23,8 @@ public:
     enum ERR_TYPE {
         NameError,
         NameErrorFunction,
-        TypeError
+        TypeError,
+        TypeErrorFunction
     };
 
     std::string getErrorMessage(ERR_TYPE err_type) {
@@ -38,7 +39,8 @@ private:
     std::unordered_map<int, std::string> logMessages = {
             {ERR_TYPE::NameError, "NameError: name '%s' is not defined\n"},
             {ERR_TYPE::NameErrorFunction, "NameError: name '%s' is not defined in function '%s'\n"},
-            {ERR_TYPE::TypeError, "TypeError: unsupported operand type(s) for %s: \'%s\' and \'%s\'\n"}
+            {ERR_TYPE::TypeError, "TypeError: unsupported operand type(s) for %s: \'%s\' and \'%s\'\n"},
+            {ERR_TYPE::TypeErrorFunction, "TypeError: %s missing %i required positional argument: %s\n"}
     };
 
     /** define some pretty colors **/

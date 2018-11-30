@@ -18,6 +18,8 @@ public:
 
 protected:
     std::string expression;
+
+    friend class PyFunction;
 };
 
 #endif //MYPYTHON_PYSTATEMENT_HPP
