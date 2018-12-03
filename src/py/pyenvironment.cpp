@@ -6,6 +6,18 @@
 
 void PyEnvironment::setVar(const std::string &varName, boost::any value, PyConstants::VarTypes vartype) {
     if (funcStack.empty()) {
+        int vecSize = static_cast<int>(mutatedVars.size());
+
+        for (int i = 0; i < vecSize; i++) {
+            if (mutatedVars[i] == varName) {
+                break;
+            }
+
+            if (i == (vecSize - 1)) {
+                mutatedVars.push_back(varName);
+            }
+        }
+
         setGlobalVar(varName, std::move(value), vartype);
         return;
     }
@@ -27,6 +39,20 @@ std::shared_ptr<PyObject> PyEnvironment::getVar(const std::string &varName) {
 }
 
 void PyEnvironment::runFunction(std::string funcSig) {
+    if (funcStack.size() >= maxFuncStackSize) {
+
+        if (isRecursive) {
+            killRecursion = true;
+            std::vector<boost::any> args{boost::any(funcSig)};
+            modules.at("localFunc")->evaluate("evalFunc", args);
+            funcReturn = false;
+            isRecursive = false;
+        }
+
+        flushFunctionStack();
+        return;
+    }
+
     std::vector<boost::any> args{boost::any(funcSig)};
     modules.at("localFunc")->evaluate("evalFunc", args);
     funcReturn = false;
@@ -194,4 +220,8 @@ void PyEnvironment::flushFunctionStack() {
     while (!funcStack.empty()) {
         popFunctionStack();
     }
+}
+
+bool PyEnvironment::funcStackEmpty() {
+    return funcStack.empty();
 }

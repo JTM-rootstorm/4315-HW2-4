@@ -1,5 +1,8 @@
 #include <utility>
 #include <sstream>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/regex.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 #include "pyfunction.hpp"
 #include "pyenvironment.hpp"
@@ -47,6 +50,8 @@ bool PyFunction::parseSigToVars(std::vector<std::string> args) {
 }
 
 bool PyFunction::checkRecursionEnds() const {
+    bool recursionEnds = false;
+
     for (auto &funcStatement : funcStatements) {
         try {
             std::shared_ptr<PyIfBlock> statement = std::dynamic_pointer_cast<PyIfBlock>(funcStatement);
@@ -54,7 +59,128 @@ bool PyFunction::checkRecursionEnds() const {
             for (auto &ifStatement : statement->trueBlock) {
                 try {
                     std::shared_ptr<PyReturn> temp = std::dynamic_pointer_cast<PyReturn>(ifStatement);
-                    return true;
+
+                    if (temp->expression.find(funcName) == std::string::npos) {
+                        continue;
+                    }
+                    else {
+                        std::string compExpr = statement->expression;
+                        std::string retExpr = temp->expression;
+                        boost::regex varNameReg{R"([A-Za-z_]+[A-Za-z0-9_]*)"};
+                        boost::regex numReg{R"([0-9]+)"};
+                        boost::regex regex{R"(^[A-Za-z_]+([\w]+)?([ ]+)?)"};
+                        boost::smatch match;
+
+                        std::string funcNameCop;
+                        if (boost::regex_search(retExpr, match, regex)) {
+                            funcNameCop = match.str();
+                            boost::trim(funcNameCop);
+
+                            std::string::size_type i = retExpr.find(funcNameCop);
+                            if (i != std::string::npos) {
+                                retExpr.erase(i,funcNameCop.size());
+                            }
+                        }
+
+                        std::vector<std::string> funcInputs;
+
+                        regex = R"(("[\w ,\.\-=+*\/!@#$%^&*()|{}\[\];\'<>?]+")|([A-Za-z_]+[A-Za-z0-9_]*)|([\d]+(\.[\d]+)?))";
+
+                        for (boost::sregex_iterator i = boost::sregex_iterator(retExpr.begin(), retExpr.end(), regex);
+                             i != boost::sregex_iterator(); ++i) {
+                            boost::smatch m = *i;
+
+                            funcInputs.push_back(m.str());
+                        }
+
+                        for (auto &funcInput : funcInputs) {
+                            boost::trim(funcInput);
+                            std::vector<std::string> split;
+                            boost::split(split, funcInput, boost::is_any_of("+/-*"));
+                            int var;
+                            bool varLeft;
+                            std::string vName;
+
+                            for (const auto &j : split) {
+                                if (boost::regex_search(j, match, varNameReg)) {
+                                    vName = match.str();
+                                    boost::trim(vName);
+                                    break;
+                                }
+                            }
+
+                            if (statement->expression.find(vName) == std::string::npos) {
+                                continue;
+                            }
+                            else {
+                                std::vector<std::string> tempV;
+                                boost::split(tempV, statement->expression, boost::is_any_of(" =><"));
+                                std::string n = tempV[0];
+                                boost::trim(n);
+
+                                varLeft = n.find(vName) != std::string::npos;
+                            }
+
+                            var = PyEnvironment::Instance().getVar(vName)->getData<int>();
+                            PyEnvironment::Instance().parseStatement(statement->expression);
+
+                            std::shared_ptr<PyObject> pyObject = PyEnvironment::Instance().exprContext.expressions[0]->evaluate();
+                            auto iter = PyEnvironment::Instance().exprContext.expressions.begin();
+                            PyEnvironment::Instance().exprContext.expressions.erase(iter, iter + 1);
+
+                            if (pyObject->type == PyConstants::VarTypes::NUMBER) {
+                                std::shared_ptr<PyInt> pyBool = std::dynamic_pointer_cast<PyInt>(pyObject);
+
+                                while(!pyBool->getData<int>()) {
+                                    std::stringstream pStatement;
+                                    pStatement << vName << "=" << funcInput;
+                                    PyEnvironment::Instance().parseStatement(pStatement.str());
+                                    int comp = PyEnvironment::Instance().getVar(vName)->getData<int>();
+
+                                    if (var == comp) {
+                                        return false;
+                                    }
+
+                                    if (statement->expression.find('<') || statement->expression.find("<=")) {
+                                        if (varLeft) {
+                                            return var > comp;
+                                        }
+                                        else {
+                                            return var < comp;
+                                        }
+                                    }
+                                    else if (statement->expression.find('>') || statement->expression.find(">=")) {
+                                        if (varLeft) {
+                                            return var < comp;
+                                        }
+                                        else {
+                                            return var > comp;
+                                        }
+                                    }
+                                    else if (statement->expression.find("==")) {
+                                        int ifExprVal;
+                                        if (varLeft) {
+                                            ifExprVal = std::stoi(split[1]);
+                                        }
+                                        else {
+                                            ifExprVal = std::stoi(split[0]);
+                                        }
+
+                                        if ((ifExprVal > var && var > comp) || (ifExprVal < var && var < comp)) {
+                                            return false;
+                                        }
+                                        else if ((ifExprVal > var && var < comp) || (ifExprVal < var && var > comp)) {
+                                            return true;
+                                        }
+                                    }
+                                }
+
+                                return static_cast<bool>(pyBool->getData<int>());
+                            }
+                        }
+
+                        return false;
+                    }
                 } catch ( ... ) {
                     continue;
                 }
@@ -63,7 +189,128 @@ bool PyFunction::checkRecursionEnds() const {
             for (auto &ifStatement : statement->falseBlock) {
                 try {
                     std::shared_ptr<PyReturn> temp = std::dynamic_pointer_cast<PyReturn>(ifStatement);
-                    return true;
+
+                    if (temp->expression.find(funcName) == std::string::npos) {
+                        continue;
+                    }
+                    else {
+                        std::string compExpr = statement->expression;
+                        std::string retExpr = temp->expression;
+                        boost::regex varNameReg{R"([A-Za-z_]+[A-Za-z0-9_]*)"};
+                        boost::regex numReg{R"([0-9]+)"};
+                        boost::regex regex{R"(^[A-Za-z_]+([\w]+)?([ ]+)?)"};
+                        boost::smatch match;
+
+                        std::string funcNameCop;
+                        if (boost::regex_search(retExpr, match, regex)) {
+                            funcNameCop = match.str();
+                            boost::trim(funcNameCop);
+
+                            std::string::size_type i = retExpr.find(funcNameCop);
+                            if (i != std::string::npos) {
+                                retExpr.erase(i,funcNameCop.size());
+                            }
+                        }
+
+                        std::vector<std::string> funcInputs;
+
+                        regex = R"(("[\w ,\.\-=+*\/!@#$%^&*()|{}\[\];\'<>?]+")|([A-Za-z_]+[A-Za-z0-9_]*)|([\d]+(\.[\d]+)?))";
+
+                        for (boost::sregex_iterator i = boost::sregex_iterator(retExpr.begin(), retExpr.end(), regex);
+                             i != boost::sregex_iterator(); ++i) {
+                            boost::smatch m = *i;
+
+                            funcInputs.push_back(m.str());
+                        }
+
+                        for (auto &funcInput : funcInputs) {
+                            boost::trim(funcInput);
+                            std::vector<std::string> split;
+                            boost::split(split, funcInput, boost::is_any_of("+/-*"));
+                            int var;
+                            bool varLeft;
+                            std::string vName;
+
+                            for (const auto &j : split) {
+                                if (boost::regex_search(j, match, varNameReg)) {
+                                    vName = match.str();
+                                    boost::trim(vName);
+                                    break;
+                                }
+                            }
+
+                            if (statement->expression.find(vName) == std::string::npos) {
+                                continue;
+                            }
+                            else {
+                                std::vector<std::string> tempV;
+                                boost::split(tempV, statement->expression, boost::is_any_of(" =><"));
+                                std::string n = tempV[0];
+                                boost::trim(n);
+
+                                varLeft = n.find(vName) != std::string::npos;
+                            }
+
+                            var = PyEnvironment::Instance().getVar(vName)->getData<int>();
+                            PyEnvironment::Instance().parseStatement(statement->expression);
+
+                            std::shared_ptr<PyObject> pyObject = PyEnvironment::Instance().exprContext.expressions[0]->evaluate();
+                            auto iter = PyEnvironment::Instance().exprContext.expressions.begin();
+                            PyEnvironment::Instance().exprContext.expressions.erase(iter, iter + 1);
+
+                            if (pyObject->type == PyConstants::VarTypes::NUMBER) {
+                                std::shared_ptr<PyInt> pyBool = std::dynamic_pointer_cast<PyInt>(pyObject);
+
+                                while(!pyBool->getData<int>()) {
+                                    std::stringstream pStatement;
+                                    pStatement << vName << "=" << funcInput;
+                                    PyEnvironment::Instance().parseStatement(pStatement.str());
+                                    int comp = PyEnvironment::Instance().getVar(vName)->getData<int>();
+
+                                    if (var == comp) {
+                                        return false;
+                                    }
+
+                                    if (statement->expression.find('<') || statement->expression.find("<=")) {
+                                        if (varLeft) {
+                                            return var > comp;
+                                        }
+                                        else {
+                                            return var < comp;
+                                        }
+                                    }
+                                    else if (statement->expression.find('>') || statement->expression.find(">=")) {
+                                        if (varLeft) {
+                                            return var < comp;
+                                        }
+                                        else {
+                                            return var > comp;
+                                        }
+                                    }
+                                    else if (statement->expression.find("==")) {
+                                        int ifExprVal;
+                                        if (varLeft) {
+                                            ifExprVal = std::stoi(split[1]);
+                                        }
+                                        else {
+                                            ifExprVal = std::stoi(split[0]);
+                                        }
+
+                                        if ((ifExprVal > var && var > comp) || (ifExprVal < var && var < comp)) {
+                                            return false;
+                                        }
+                                        else if ((ifExprVal > var && var < comp) || (ifExprVal < var && var > comp)) {
+                                            return true;
+                                        }
+                                    }
+                                }
+
+                                return static_cast<bool>(pyBool->getData<int>());
+                            }
+                        }
+
+                        return false;
+                    }
                 } catch ( ... ) {
                     continue;
                 }
@@ -72,7 +319,7 @@ bool PyFunction::checkRecursionEnds() const {
             continue;
         }
     }
-    return false;
+    return recursionEnds;
 }
 
 
@@ -82,18 +329,18 @@ void PyFunction::evaluate(std::vector<std::string> args) {
         return;
     }
 
-    if (PyEnvironment::Instance().isRecursive) {
+    /*if (PyEnvironment::Instance().isRecursive && !PyEnvironment::Instance().singleRecurseCheck) {
         PyEnvironment::Instance().isRecursive = false;
-        PyEnvironment::Instance().flushFunctionStack();
+        PyEnvironment::Instance().singleRecurseCheck = true;
 
         if (!checkRecursionEnds()) {
             PyEnvironment::Instance().recursiveFunctionsEnd.push_back(false);
+            PyEnvironment::Instance().flushFunctionStack();
             return;
         }
 
         PyEnvironment::Instance().recursiveFunctionsEnd.push_back(true);
-        return;
-    }
+    }*/
 
     for (auto &funcStatement : funcStatements) {
         if (PyEnvironment::Instance().funcReturn) {
@@ -103,4 +350,6 @@ void PyFunction::evaluate(std::vector<std::string> args) {
 
         funcStatement->evaluate();
     }
+
+    // PyEnvironment::Instance().singleRecurseCheck = false;
 }

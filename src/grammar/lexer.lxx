@@ -102,7 +102,7 @@ RPARENS         \)
 }
 
 <IFDEFINE>{IFBODY} {
-    PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
+    // PyEnvironment::Instance().lexxerQueue.push_back(boost::any(std::string(yytext)));
 }
 
 {IFELSE}{IFBODY} {

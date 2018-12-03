@@ -47,14 +47,19 @@ public:
     std::shared_ptr<PyFunction> getFunctionStackTop();
     void popFunctionStack();
     void flushFunctionStack();
+    bool funcStackEmpty();
 
     std::stack<std::shared_ptr<PyObject>> funcReturnStack;
     std::vector<boost::any> lexxerQueue;
     std::vector<int> nestedIfCount;
     std::vector<std::string> mutatedVars;
-    std::vector<bool> recursiveFunctionsEnd;
+    std::vector<std::pair<std::string, bool>> recursiveFunctionsEnd;
     bool funcReturn = false;
     bool isRecursive = false;
+    bool killRecursion = false;
+    // bool singleRecurseCheck = false;
+
+    int maxFuncStackSize = 250;
 
 protected:
     PyEnvironment();

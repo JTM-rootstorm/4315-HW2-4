@@ -5,6 +5,7 @@
 
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/regex.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 void FunctionModule::evaluate(const std::string &task, std::vector<boost::any> args) {
     if (task == "gen") {
@@ -75,7 +76,17 @@ void FunctionModule::setFunctionVar(std::shared_ptr<PyFunction> function, std::v
     bool nameUsed = varNameUsed(varName);
 
     if (nameUsed && vartype != PyConstants::VarTypes::NONE) {
-        PyEnvironment::Instance().mutatedVars.push_back(varName);
+        int vecSize = static_cast<int>(PyEnvironment::Instance().mutatedVars.size());
+
+        for (int i = 0; i < vecSize; i++) {
+            if (PyEnvironment::Instance().mutatedVars[i] == varName) {
+                break;
+            }
+
+            if (i == (vecSize - 1)) {
+                PyEnvironment::Instance().mutatedVars.push_back(varName);
+            }
+        }
 
         if (function->localVars.at(varName)->type == vartype) {
             modifyFunctionVar(function, vartype, varName, value);
@@ -193,21 +204,54 @@ void FunctionModule::runFunction(const std::string &sig) {
         }
     }
 
-    regex = R"(("[\w ,\.\-=+*\/!@#$%^&*()|{}\[\];\'<>?]+")|([A-Za-z_]+[A-Za-z0-9_]*)|([\d]+(\.[\d]+)?))";
+    if (!PyEnvironment::Instance().killRecursion) {
+        regex = R"(("[\w ,\.\-=+*\/!@#$%^&*()|{}\[\];\'<>?]+")|([A-Za-z_]+[A-Za-z0-9_]*)|([\d]+(\.[\d]+)?))";
 
-    for (boost::sregex_iterator i = boost::sregex_iterator(sig.begin(), sig.end(), regex);
-         i != boost::sregex_iterator(); ++i) {
-        boost::smatch m = *i;
+        for (boost::sregex_iterator i = boost::sregex_iterator(sig.begin(), sig.end(), regex);
+             i != boost::sregex_iterator(); ++i) {
+            boost::smatch m = *i;
 
-        results.push_back(m.str());
+            if (m.str().find('\"') == std::string::npos) {
+                // there's probably a var name in here somewhere
+                std::string temp = m.str();
+
+                boost::trim(temp);
+
+                boost::regex r{R"([A-Za-z_]+([A-Za-z0-9_]+)?)"};
+                boost::smatch tmatch;
+
+                if (boost::regex_match(temp, tmatch, r)) {
+                    for (auto& vName : tmatch) {
+                        std::stringstream ss;
+                        ss << vName;
+                        boost::regex_replace(temp, boost::regex(ss.str()), std::to_string(PyEnvironment::Instance().getVar(ss.str())->getData<int>()));
+                    }
+                    results.push_back(temp);
+                    continue;
+                }
+            }
+
+            results.push_back(m.str());
+        }
+
+        PyEnvironment::Instance().isRecursive = PyEnvironment::Instance().getFunctionStackTop()->funcName == funcName;
+
+        auto function = pyFunctions.at(funcName);
+        PyEnvironment::Instance().pushOntoFunctionStack(function);
+        PyEnvironment::Instance().getFunctionStackTop()->eval(results);
+        PyEnvironment::Instance().popFunctionStack();
     }
 
-    PyEnvironment::Instance().isRecursive = PyEnvironment::Instance().getFunctionStackTop()->funcName == funcName;
+    if (PyEnvironment::Instance().isRecursive) {
+        for (auto& pair : PyEnvironment::Instance().recursiveFunctionsEnd) {
+            if (pair.first == funcName || pair.first.find(funcName) != std::string::npos) {
+                return;
+            }
+        }
 
-    auto function = pyFunctions.at(funcName);
-    PyEnvironment::Instance().pushOntoFunctionStack(function);
-    PyEnvironment::Instance().getFunctionStackTop()->eval(results);
-    PyEnvironment::Instance().popFunctionStack();
+        PyEnvironment::Instance().recursiveFunctionsEnd.emplace_back(funcName, !PyEnvironment::Instance().killRecursion);
+        PyEnvironment::Instance().killRecursion = false;
+    }
 }
 
 void FunctionModule::initStandardFunctions() {

@@ -2,7 +2,7 @@
 
 int main(int argc, char** argv) {
 
-    if (argc == 2) {
+    if (argc >= 2) {
         PyEnvironment::Instance().parseFile(argv[1]);
 
         std::cout << "Mutated Variable: ";
@@ -23,8 +23,8 @@ int main(int argc, char** argv) {
 
         std::cout << "Recursive function ends: ";
 
-        for (auto recEnd : PyEnvironment::Instance().recursiveFunctionsEnd) {
-            if (recEnd) {
+        for (auto& pair : PyEnvironment::Instance().recursiveFunctionsEnd) {
+            if (pair.second) {
                 std::cout << "Yes, ";
             }
             else {

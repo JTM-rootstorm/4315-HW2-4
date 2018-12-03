@@ -6,13 +6,13 @@
 #include "../pyenvironment.hpp"
 
 void StdPrint::evaluate(std::vector<std::string> args) {
-    std::stringstream ss;
+    /*std::stringstream ss;
 
     boost::regex strRegex{R"(\".*\")"};
     boost::regex varRegex{R"([A-Za-z_]+[A-Za-z0-9_]*)"};
     boost::smatch match;
 
-    /* nix the function name */
+    // nix the function name
     args.erase(args.begin(), args.begin() + 1);
 
     for (auto &string : args) {
@@ -61,6 +61,6 @@ void StdPrint::evaluate(std::vector<std::string> args) {
     }
 
     std::string finalstr = ss.str();
-    // stub out
-    // PyEnvironment::Instance().pyConsole.printToConsole(finalstr);
+    stub out
+    PyEnvironment::Instance().pyConsole.printToConsole(finalstr);*/
 }
